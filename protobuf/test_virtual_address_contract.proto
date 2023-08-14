@@ -12,13 +12,17 @@ option csharp_namespace = "AElf.Contracts.TestContract.VirtualAddress";
 service VirtualAddressContract {
   option (aelf.csharp_state) = "AElf.Contracts.TestContract.VirtualAddress.State";
   option (aelf.base) = "acs1.proto";
+
+  rpc VirtualAddressVote(VirtualAddressVoteInput) returns (google.protobuf.Empty){}
+  rpc VirtualAddressWithdraw(aelf.Hash) returns (google.protobuf.Empty){}
+  rpc VirtualAddressChangeVotingOption(VirtualAddressChangeVotingOptionInput) returns (google.protobuf.Empty){}
+  rpc VirtualAddressClaimProfit(VirtualAddressClaimProfitInput) returns (google.protobuf.Empty){}
+  rpc ForwardCall(ForwardCallInput) returns (google.protobuf.Empty){}
   
-  rpc VirtualAddressVote(VirtualAddressVoteInput) returns (google.protobuf.Empty);
-  rpc VirtualAddressWithdraw(aelf.Hash) returns (google.protobuf.Empty);
-  rpc VirtualAddressChangeVotingOption(VirtualAddressChangeVotingOptionInput) returns (google.protobuf.Empty);
-  rpc VirtualAddressClaimProfit(VirtualAddressClaimProfitInput) returns (google.protobuf.Empty);
-  rpc ForwardCall(ForwardCallInput) returns (google.protobuf.Empty);
-  
+  rpc Test(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc Test2(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc Test3(google.protobuf.Empty) returns (google.protobuf.Empty);
+
   rpc GetVirtualAddress(google.protobuf.Empty) returns (aelf.Address) {
     option (aelf.is_view) = true;
   }

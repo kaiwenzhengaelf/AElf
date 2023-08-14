@@ -74,6 +74,8 @@ public class CSharpSmartContractContext : ISmartContractBridgeContext
     /// </summary>
     public Address Origin => SmartContractBridgeContextImplementation.Origin;
 
+    public Address OriginNext => SmartContractBridgeContextImplementation.OriginNext;
+
     public Hash OriginTransactionId => SmartContractBridgeContextImplementation.OriginTransactionId;
 
     /// <summary>

@@ -88,6 +88,16 @@ public class PlainTransactionExecutingService : IPlainTransactionExecutingServic
 
                 var returnSet = GetReturnSet(trace, result);
                 returnSets.Add(returnSet);
+                
+                if (transaction.MethodName.Contains("Test"))
+                {
+                    foreach (var inlineTrace in trace.InlineTraces)
+                    {
+                        result = GetTransactionResult(inlineTrace, transactionExecutingDto.BlockHeader.Height);
+                        returnSet = GetReturnSet(inlineTrace, result);
+                        returnSets.Add(returnSet);
+                    }
+                }
             }
 
             return returnSets;
@@ -227,6 +237,7 @@ public class PlainTransactionExecutingService : IPlainTransactionExecutingServic
                 Transaction = inlineTx,
                 CurrentBlockTime = currentBlockTime,
                 Origin = txContext.Origin,
+                OriginNext = txContext.OriginNext,
                 OriginTransactionId = originTransactionId
             };
 
@@ -460,7 +471,7 @@ public class PlainTransactionExecutingService : IPlainTransactionExecutingServic
             : singleTxExecutingDto.Transaction.From;
 
         var txContext = _transactionContextFactory.Create(singleTxExecutingDto.Transaction,
-            singleTxExecutingDto.ChainContext, singleTxExecutingDto.OriginTransactionId, origin,
+            singleTxExecutingDto.ChainContext, singleTxExecutingDto.OriginTransactionId, origin, singleTxExecutingDto.OriginNext, 
             singleTxExecutingDto.Depth, singleTxExecutingDto.CurrentBlockTime);
 
         return txContext;

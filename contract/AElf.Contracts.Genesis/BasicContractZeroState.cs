@@ -9,6 +9,8 @@ public partial class BasicContractZeroState : ContractState
 {
     public Int64State ContractSerialNumber { get; set; }
     public MappedState<Address, ContractInfo> ContractInfos { get; set; }
+    
+    public MappedState<string, Address> UserContractNameAddressMap { get; set; }
 
     public MappedState<Hash, SmartContractRegistration> SmartContractRegistrations { get; set; }
 

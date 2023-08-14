@@ -2121,4 +2121,10 @@ public partial class ElectionContractTests : ElectionContractTestBase
         
         balance.Balance.ShouldBe(amount);
     }
+
+    [Fact]
+    public async Task OriginNextTests()
+    {
+        await VirtualAddressContractStub.Test.SendAsync(new Empty());
+    }
 }

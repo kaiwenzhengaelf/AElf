@@ -175,6 +175,7 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
     public Address Sender => TransactionContext.Transaction.From.Clone();
     public Address Self => TransactionContext.Transaction.To.Clone();
     public Address Origin => TransactionContext.Origin.Clone();
+    public Address OriginNext => TransactionContext.OriginNext.Clone();
     public Hash OriginTransactionId => TransactionContext.OriginTransactionId;
     public long CurrentHeight => TransactionContext.BlockHeight;
     public Timestamp CurrentBlockTime => TransactionContext.CurrentBlockTime;
@@ -233,25 +234,34 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
     public void SendVirtualInline(Hash fromVirtualAddress, Address toAddress, string methodName,
         ByteString args)
     {
+        var virtualAddress = ConvertVirtualAddressToContractAddress(fromVirtualAddress, Self);
         TransactionContext.Trace.InlineTransactions.Add(new Transaction
         {
-            From = ConvertVirtualAddressToContractAddress(fromVirtualAddress, Self),
+            From = virtualAddress,
             To = toAddress,
             MethodName = methodName,
             Params = args
         });
+
+        if (TransactionContext.OriginNext == TransactionContext.Origin)
+            TransactionContext.OriginNext = virtualAddress;
     }
 
     public void SendVirtualInlineBySystemContract(Hash fromVirtualAddress, Address toAddress, string methodName,
         ByteString args)
     {
+        var virtualAddress = ConvertVirtualAddressToContractAddressWithContractHashName(fromVirtualAddress, Self);
+        
         TransactionContext.Trace.InlineTransactions.Add(new Transaction
         {
-            From = ConvertVirtualAddressToContractAddressWithContractHashName(fromVirtualAddress, Self),
+            From = virtualAddress,
             To = toAddress,
             MethodName = methodName,
             Params = args
         });
+        
+        if (TransactionContext.OriginNext == TransactionContext.Origin)
+            TransactionContext.OriginNext = virtualAddress;
     }
 
     public Address ConvertVirtualAddressToContractAddress(Hash virtualAddress, Address contractAddress)

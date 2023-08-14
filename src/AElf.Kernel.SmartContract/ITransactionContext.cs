@@ -6,6 +6,7 @@ namespace AElf.Kernel.SmartContract;
 public interface ITransactionContext
 {
     Address Origin { get; set; }
+    Address OriginNext { get; set; }
     Hash PreviousBlockHash { get; set; }
     Hash OriginTransactionId { get; set; }
     long BlockHeight { get; set; }

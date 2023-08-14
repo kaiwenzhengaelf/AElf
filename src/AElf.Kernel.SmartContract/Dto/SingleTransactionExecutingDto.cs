@@ -10,6 +10,7 @@ public class SingleTransactionExecutingDto
     public Transaction Transaction { get; set; }
     public Timestamp CurrentBlockTime { get; set; }
     public Address Origin { get; set; } = null;
+    public Address OriginNext { get; set; } = null;
     public bool IsCancellable { get; set; } = true;
 
     public Hash OriginTransactionId { get; set; }

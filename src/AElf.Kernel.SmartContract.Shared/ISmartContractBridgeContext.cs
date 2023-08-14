@@ -23,6 +23,8 @@ public interface ISmartContractBridgeContext
     Address Self { get; }
 
     Address Origin { get; }
+    
+    Address OriginNext { get; }
 
     Hash OriginTransactionId { get; }
 

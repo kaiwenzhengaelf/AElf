@@ -25,6 +25,10 @@ service TokenContractImpl {
     option (aelf.base) = "acs2.proto";
     option (aelf.base) = "token_contract.proto";
     
+    rpc Test(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc Test2(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc Test3(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    
     // Transfer resource tokens to designated contract address.
     rpc AdvanceResourceToken (AdvanceResourceTokenInput) returns (google.protobuf.Empty) {
     }

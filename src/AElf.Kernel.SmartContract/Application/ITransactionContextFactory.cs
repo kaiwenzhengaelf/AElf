@@ -9,7 +9,7 @@ public interface ITransactionContextFactory
         int callDepth = 0);
 
     ITransactionContext Create(Transaction transaction, IChainContext chainContext, Hash originTransactionId,
-        Address originAddress, int callDepth = 0, Timestamp blockTime = null);
+        Address originAddress, Address originNextAddress, int callDepth = 0, Timestamp blockTime = null);
 }
 
 public class TransactionContextFactory : ITransactionContextFactory
@@ -31,12 +31,15 @@ public class TransactionContextFactory : ITransactionContextFactory
     }
 
     public ITransactionContext Create(Transaction transaction, IChainContext chainContext, Hash originTransactionId,
-        Address originAddress, int callDepth = 0, Timestamp blockTime = null)
+        Address originAddress, Address originNextAddress, int callDepth = 0, Timestamp blockTime = null)
     {
         var txContext = Create(transaction, chainContext, blockTime, callDepth);
 
         if (originAddress != null)
+        {
             txContext.Origin = originAddress;
+            txContext.OriginNext = originNextAddress == null ? originAddress : originNextAddress;
+        }
 
         if (originTransactionId != null)
             txContext.OriginTransactionId = originTransactionId;
