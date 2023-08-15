@@ -174,13 +174,13 @@ public class TransactionResultAppService : AElfAppService, ITransactionResultApp
         var transactionResult = await GetMinedTransactionResultAsync(transactionIdHash);
         var blockHash = transactionResult.BlockHash;
         var blockInfo = await _blockchainService.GetBlockByHashAsync(blockHash);
-        var transactionIds = blockInfo.Body.TransactionIds;
-        var index = transactionIds.IndexOf(transactionIdHash);
-        if (index == -1) throw new UserFriendlyException(Error.Message[Error.NotFound], Error.NotFound.ToString());
+        // var transactionIds = blockInfo.Body.TransactionIds;
+        // var index = transactionIds.IndexOf(transactionIdHash);
+        // if (index == -1) throw new UserFriendlyException(Error.Message[Error.NotFound], Error.NotFound.ToString());
         var leafNodes = await GetLeafNodesAsync(blockInfo.TransactionIds);
 
         var binaryMerkleTree = BinaryMerkleTree.FromLeafNodes(leafNodes);
-        var path = binaryMerkleTree.GenerateMerklePath(index);
+        var path = binaryMerkleTree.GenerateMerklePath(1);
         var merklePath = _objectMapper.Map<MerklePath, MerklePathDto>(path);
 
         return merklePath;
