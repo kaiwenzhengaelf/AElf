@@ -118,6 +118,7 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             bloom.Combine(new[] { new Bloom(returnSet.Bloom.ToByteArray()) });
 
         var allExecutedTransactionIds = transactions.Select(x => x.GetHash()).ToList();
+        allExecutedTransactionIds.AddRange(executionReturnSetCollection.Executed.Select(x => x.TransactionId));
         var orderedReturnSets = executionReturnSetCollection.GetExecutionReturnSetList()
             .OrderBy(d => allExecutedTransactionIds.IndexOf(d.TransactionId)).ToList();
 
