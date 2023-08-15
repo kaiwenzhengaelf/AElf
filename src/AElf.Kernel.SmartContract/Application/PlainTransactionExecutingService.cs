@@ -96,6 +96,13 @@ public class PlainTransactionExecutingService : IPlainTransactionExecutingServic
                         result = GetTransactionResult(inlineTrace, transactionExecutingDto.BlockHeader.Height);
                         returnSet = GetReturnSet(inlineTrace, result);
                         returnSets.Add(returnSet);
+
+                        foreach (var inline in inlineTrace.InlineTraces)
+                        {
+                            result = GetTransactionResult(inline, transactionExecutingDto.BlockHeader.Height);
+                            returnSet = GetReturnSet(inline, result);
+                            returnSets.Add(returnSet);
+                        }
                     }
                 }
             }

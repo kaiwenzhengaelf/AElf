@@ -119,12 +119,6 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
 
         var allExecutedTransactionIds = transactions.Select(x => x.GetHash()).ToList();
         
-        var ids = new List<Hash>();
-        if (!executionReturnSetCollection.GetExecutionReturnSetList().IsNullOrEmpty())
-        {
-            ids.AddRange(executionReturnSetCollection.GetExecutionReturnSetList().Select(x => x.TransactionId));
-        }
-        
         var orderedReturnSets = executionReturnSetCollection.GetExecutionReturnSetList()
             .OrderBy(d => allExecutedTransactionIds.IndexOf(d.TransactionId)).ToList();
 
@@ -135,7 +129,7 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
                 Bloom = ByteString.CopyFrom(bloom.Data),
                 MerkleTreeRootOfWorldState = CalculateWorldStateMerkleTreeRoot(blockStateSet),
                 MerkleTreeRootOfTransactionStatus = CalculateTransactionStatusMerkleTreeRoot(orderedReturnSets),
-                MerkleTreeRootOfTransactions = CalculateTransactionMerkleTreeRoot(ids)
+                MerkleTreeRootOfTransactions = CalculateTransactionMerkleTreeRoot(allExecutedTransactionIds)
             },
             Body = new BlockBody
             {
