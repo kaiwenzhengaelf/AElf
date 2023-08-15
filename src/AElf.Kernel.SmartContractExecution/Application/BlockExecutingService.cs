@@ -119,6 +119,7 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
 
         var allExecutedTransactionIds = transactions.Select(x => x.GetHash()).ToList();
         allExecutedTransactionIds.AddRange(executionReturnSetCollection.Executed.Select(x => x.TransactionId));
+        allExecutedTransactionIds = allExecutedTransactionIds.Distinct().ToList();
         var orderedReturnSets = executionReturnSetCollection.GetExecutionReturnSetList()
             .OrderBy(d => allExecutedTransactionIds.IndexOf(d.TransactionId)).ToList();
 
