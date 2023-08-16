@@ -86,6 +86,15 @@ service ACS7 {
     rpc GetChainInitializationData (google.protobuf.Int32Value) returns (ChainInitializationData) {
         option (aelf.is_view) = true;
     }
+
+    rpc TestVerifyTransaction (VerifyTransactionInput) returns (TestVerifyTransactionOutput) {
+        option (aelf.is_view) = true;
+    }
+}
+
+message TestVerifyTransactionOutput {
+    aelf.Hash merkle_tree_root = 1;
+    aelf.Hash root_calculated = 2;
 }
 
 message SideChainBlockData {

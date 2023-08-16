@@ -45,6 +45,21 @@ public partial class CrossChainContract
         return new BoolValue { Value = merkleTreeRoot == rootCalculated };
     }
 
+    public override TestVerifyTransactionOutput TestVerifyTransaction(VerifyTransactionInput input)
+    {
+        var parentChainHeight = input.ParentChainHeight;
+        var merkleTreeRoot = GetMerkleTreeRoot(input.VerifiedChainId, parentChainHeight);
+        Assert(merkleTreeRoot != null,
+            $"Parent chain block at height {parentChainHeight} is not recorded.");
+        var rootCalculated = ComputeRootWithTransactionStatusMerklePath(input.TransactionId, input.Path);
+
+        return new TestVerifyTransactionOutput
+        {
+            MerkleTreeRoot = merkleTreeRoot,
+            RootCalculated = rootCalculated
+        };
+    }
+
     public override GetChainStatusOutput GetChainStatus(Int32Value input)
     {
         var info = State.SideChainInfo[input.Value];
