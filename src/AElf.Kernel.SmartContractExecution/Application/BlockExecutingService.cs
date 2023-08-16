@@ -139,19 +139,20 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
 
         if (transactions.Any(t => t.MethodName.Contains("Test")))
         {
-            var tx = transactions.First(t => t.MethodName.Contains("Test"));
-            var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId));
+            var tx = orderedReturnSets.First(o => o.TransactionId == transactions.First(t => t.MethodName.Contains("Test")).GetHash());
+            
+            var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId)).ToList();
             
             var binaryMerkleTree = new BinaryMerkleTree();
-            binaryMerkleTree.Nodes.AddRange(list.Select(o => o.TransactionId));
-            binaryMerkleTree.Nodes.Add(tx.GetHash());
+            binaryMerkleTree.Nodes.AddRange(list.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
+            binaryMerkleTree.Nodes.Add(GetHashCombiningTransactionAndStatus(tx.TransactionId, tx.Status));
             binaryMerkleTree.LeafCount = binaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
             binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
 
-            var list2 = orderedReturnSets.Where(o => !list.Contains(o) && o.TransactionId != tx.GetHash());
+            var list2 = orderedReturnSets.Where(o => !list.Contains(o) && o.TransactionId != tx.TransactionId);
             var newBinaryMerkleTree = new BinaryMerkleTree();
-            newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => o.TransactionId));
+            newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
             newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
             newBinaryMerkleTree.LeafCount = newBinaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(newBinaryMerkleTree.Nodes);
