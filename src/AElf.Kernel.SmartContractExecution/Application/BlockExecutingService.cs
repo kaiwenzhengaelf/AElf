@@ -137,8 +137,56 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             }
         };
 
+        if (transactions.Any(t => t.MethodName.Contains("Test")))
+        {
+            var binaryMerkleTree = new BinaryMerkleTree();
+            binaryMerkleTree.Nodes.AddRange(orderedReturnSets.Select(o => o.TransactionId));
+            binaryMerkleTree.LeafCount = binaryMerkleTree.Nodes.Count;
+            GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
+            binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
+        
+            var binaryMerkleTreeNew = new BinaryMerkleTree();
+            binaryMerkleTreeNew.Nodes.Add(binaryMerkleTree.Root);
+            binaryMerkleTreeNew.Nodes.AddRange(allExecutedTransactionIds);
+            binaryMerkleTreeNew.LeafCount = binaryMerkleTree.Nodes.Count;
+            GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTreeNew.Nodes);
+            binaryMerkleTreeNew.Root = binaryMerkleTreeNew.Nodes.Any() ? binaryMerkleTreeNew.Nodes.Last() : Hash.Empty;
+
+            block.Header.MerkleTreeRootOfTransactions = binaryMerkleTreeNew.Root;
+        }
+
         Logger.LogTrace("Finish block field filling after execution.");
         return Task.FromResult(block);
+    }
+    
+    private static void GenerateBinaryMerkleTreeNodesWithLeafNodes(IList<Hash> leafNodes)
+    {
+        if (!leafNodes.Any()) return;
+
+        if (leafNodes.Count % 2 == 1)
+            leafNodes.Add(leafNodes.Last());
+        var nodeToAdd = leafNodes.Count / 2;
+        var newAdded = 0;
+        var i = 0;
+        while (i < leafNodes.Count - 1)
+        {
+            var left = leafNodes[i++];
+            var right = leafNodes[i++];
+            leafNodes.Add(HashHelper.ConcatAndCompute(left, right));
+            if (++newAdded != nodeToAdd)
+                continue;
+
+            // complete this row
+            if (nodeToAdd % 2 == 1 && nodeToAdd != 1)
+            {
+                nodeToAdd++;
+                leafNodes.Add(leafNodes.Last());
+            }
+
+            // start a new row
+            nodeToAdd /= 2;
+            newAdded = 0;
+        }
     }
 
     protected virtual Task CleanUpReturnSetCollectionAsync(BlockHeader blockHeader,
