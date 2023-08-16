@@ -139,20 +139,26 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
 
         if (transactions.Any(t => t.MethodName.Contains("Test")))
         {
+            var tx = transactions.First(t => t.MethodName.Contains("Test"));
+            var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId));
+            
             var binaryMerkleTree = new BinaryMerkleTree();
-            binaryMerkleTree.Nodes.AddRange(orderedReturnSets.Select(o => o.TransactionId));
+            binaryMerkleTree.Nodes.AddRange(list.Select(o => o.TransactionId));
+            binaryMerkleTree.Nodes.Add(tx.GetHash());
             binaryMerkleTree.LeafCount = binaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
             binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
-        
-            var binaryMerkleTreeNew = new BinaryMerkleTree();
-            binaryMerkleTreeNew.Nodes.Add(binaryMerkleTree.Root);
-            binaryMerkleTreeNew.Nodes.AddRange(allExecutedTransactionIds);
-            binaryMerkleTreeNew.LeafCount = binaryMerkleTree.Nodes.Count;
-            GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTreeNew.Nodes);
-            binaryMerkleTreeNew.Root = binaryMerkleTreeNew.Nodes.Any() ? binaryMerkleTreeNew.Nodes.Last() : Hash.Empty;
 
-            block.Header.MerkleTreeRootOfTransactions = binaryMerkleTreeNew.Root;
+            var list2 = orderedReturnSets.Where(o => !list.Contains(o));
+            var newBinaryMerkleTree = new BinaryMerkleTree();
+            newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => o.TransactionId));
+            newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
+            newBinaryMerkleTree.LeafCount = newBinaryMerkleTree.Nodes.Count;
+            GenerateBinaryMerkleTreeNodesWithLeafNodes(newBinaryMerkleTree.Nodes);
+            newBinaryMerkleTree.Root = newBinaryMerkleTree.Nodes.Any() ? newBinaryMerkleTree.Nodes.Last() : Hash.Empty;
+            
+
+            block.Header.MerkleTreeRootOfTransactionStatus = newBinaryMerkleTree.Root;
         }
 
         Logger.LogTrace("Finish block field filling after execution.");
