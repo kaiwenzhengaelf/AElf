@@ -34,7 +34,7 @@ public class ParallelTestTransactionContextFactory : ITransactionContextFactory
     }
 
     public ITransactionContext Create(Transaction transaction, IChainContext chainContext, Hash originTransactionId,
-        Address originAddress, int callDepth = 0, Timestamp blockTime = null)
+        Address originAddress, Address originNextAddress, int callDepth = 0, Timestamp blockTime = null)
     {
         throw new NotImplementedException();
     }
