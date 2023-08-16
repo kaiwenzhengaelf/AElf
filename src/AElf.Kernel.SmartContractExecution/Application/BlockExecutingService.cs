@@ -149,7 +149,7 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
             binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
 
-            var list2 = orderedReturnSets.Where(o => !list.Contains(o));
+            var list2 = orderedReturnSets.Where(o => !list.Contains(o) && o.TransactionId != tx.GetHash());
             var newBinaryMerkleTree = new BinaryMerkleTree();
             newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => o.TransactionId));
             newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
