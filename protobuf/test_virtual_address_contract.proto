@@ -19,9 +19,9 @@ service VirtualAddressContract {
   rpc VirtualAddressClaimProfit(VirtualAddressClaimProfitInput) returns (google.protobuf.Empty){}
   rpc ForwardCall(ForwardCallInput) returns (google.protobuf.Empty){}
   
-  rpc Test(google.protobuf.Empty) returns (google.protobuf.Empty);
-  rpc Test2(google.protobuf.Empty) returns (google.protobuf.Empty);
-  rpc Test3(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc Test(google.protobuf.Empty) returns (google.protobuf.Int64Value);
+  rpc Test2(google.protobuf.Empty) returns (google.protobuf.Int64Value);
+  rpc Test3(google.protobuf.Empty) returns (google.protobuf.Int64Value);
 
   rpc GetVirtualAddress(google.protobuf.Empty) returns (aelf.Address) {
     option (aelf.is_view) = true;

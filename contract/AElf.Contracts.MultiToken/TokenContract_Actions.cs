@@ -593,33 +593,42 @@ public partial class TokenContract : TokenContractImplContainer.TokenContractImp
 
     #endregion
 
-    public override Empty Test(Empty input)
+    public override Int64Value Test(Empty input)
     {
         var originNext = Context.OriginNext;
         Context.LogDebug(() =>
             $"Test, TransactionId:{Context.TransactionId},OriginTransactionId:{Context.OriginTransactionId}");
         Context.SendVirtualInline(HashHelper.ComputeFrom("test"), Context.Self, "Test2", new Empty().ToByteString());
 
-        return new Empty();
+        return new Int64Value
+        {
+            Value = 10086
+        };
     }
 
-    public override Empty Test2(Empty input)
+    public override Int64Value Test2(Empty input)
     {
         var originNext = Context.OriginNext;
         Context.LogDebug(() =>
             $"Test2, TransactionId:{Context.TransactionId},OriginTransactionId:{Context.OriginTransactionId}");
         Context.SendVirtualInline(HashHelper.ComputeFrom("test2"), Context.Self, "Test3", new Empty().ToByteString());
 
-        return new Empty();
+        return new Int64Value
+        {
+            Value = 10086
+        };
     }
 
-    public override Empty Test3(Empty input)
+    public override Int64Value Test3(Empty input)
     {
         Context.LogDebug(() =>
             $"Test3, TransactionId:{Context.TransactionId},OriginTransactionId:{Context.OriginTransactionId}");
 
         var originNext = Context.OriginNext;
 
-        return new Empty();
+        return new Int64Value
+        {
+            Value = 10086
+        };
     }
 }

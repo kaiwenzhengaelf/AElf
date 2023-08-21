@@ -86,26 +86,35 @@ public partial class Action : VirtualAddressContractContainer.VirtualAddressCont
         }
     }
 
-    public override Empty Test(Empty input)
+    public override Int64Value Test(Empty input)
     {
         var originNext = Context.OriginNext;
         Context.SendVirtualInline(HashHelper.ComputeFrom("test"), Context.Self, "Test2", new Empty().ToByteString());
 
-        return new Empty();
+        return new Int64Value
+        {
+            Value = 10086
+        };
     }
 
-    public override Empty Test2(Empty input)
+    public override Int64Value Test2(Empty input)
     {
         var originNext = Context.OriginNext;
         Context.SendVirtualInline(HashHelper.ComputeFrom("test2"), Context.Self, "Test3", new Empty().ToByteString());
 
-        return new Empty();
+        return new Int64Value
+        {
+            Value = 10086
+        };
     }
     
-    public override Empty Test3(Empty input)
+    public override Int64Value Test3(Empty input)
     {
         var originNext = Context.OriginNext;
 
-        return new Empty();
+        return new Int64Value
+        {
+            Value = 10086
+        };
     }
 }

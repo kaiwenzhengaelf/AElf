@@ -12,6 +12,7 @@ using AElf.Kernel.SmartContract.Application;
 using AElf.Kernel.SmartContract.Domain;
 using AElf.Types;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Local;
@@ -140,20 +141,19 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
         if (transactions.Any(t => t.MethodName.Contains("Test")))
         {
             var tx = orderedReturnSets.First(o => o.TransactionId == transactions.First(t => t.MethodName.Contains("Test")).GetHash());
-            
-            var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId)).ToList();
+            var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId) && Int64Value.Parser.ParseFrom(o.ReturnValue).Value == 10086).ToList();
             
             var binaryMerkleTree = new BinaryMerkleTree();
-            binaryMerkleTree.Nodes.AddRange(list.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
             binaryMerkleTree.Nodes.Add(GetHashCombiningTransactionAndStatus(tx.TransactionId, tx.Status));
+            binaryMerkleTree.Nodes.AddRange(list.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
             binaryMerkleTree.LeafCount = binaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
             binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
 
             var list2 = orderedReturnSets.Where(o => !list.Contains(o) && o.TransactionId != tx.TransactionId);
             var newBinaryMerkleTree = new BinaryMerkleTree();
-            newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
             newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
+            newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
             newBinaryMerkleTree.LeafCount = newBinaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(newBinaryMerkleTree.Nodes);
             newBinaryMerkleTree.Root = newBinaryMerkleTree.Nodes.Any() ? newBinaryMerkleTree.Nodes.Last() : Hash.Empty;
