@@ -14,6 +14,7 @@ using AElf.Types;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus.Local;
 
@@ -160,10 +161,17 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             
 
             block.Header.MerkleTreeRootOfTransactionStatus = newBinaryMerkleTree.Root;
+            
+            Logger.LogDebug($"123454321 Root: {newBinaryMerkleTree.Root.ToHex()}, Nodes: {JsonConvert.SerializeObject(newBinaryMerkleTree.Nodes.Select(t => t.ToHex()))}");
         }
 
         Logger.LogTrace("Finish block field filling after execution.");
         return Task.FromResult(block);
+    }
+
+    private void PrintMerkleTree(BinaryMerkleTree tree)
+    {
+        
     }
     
     private static void GenerateBinaryMerkleTreeNodesWithLeafNodes(IList<Hash> leafNodes)
