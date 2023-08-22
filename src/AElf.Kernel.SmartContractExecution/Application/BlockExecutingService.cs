@@ -160,7 +160,7 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             Logger.LogDebug($"123454321 OtherTx: {JsonConvert.SerializeObject(list2.Select(t => t.TransactionId.ToHex()))}");
             var newBinaryMerkleTree = new BinaryMerkleTree();
             newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
-            newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
+            newBinaryMerkleTree.Nodes.Add(GetHashCombiningTransactionAndStatus(binaryMerkleTree.Root, tx.Status));
             newBinaryMerkleTree.LeafCount = newBinaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(newBinaryMerkleTree.Nodes);
             newBinaryMerkleTree.Root = newBinaryMerkleTree.Nodes.Any() ? newBinaryMerkleTree.Nodes.Last() : Hash.Empty;
