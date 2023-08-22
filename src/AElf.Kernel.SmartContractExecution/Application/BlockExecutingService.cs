@@ -143,6 +143,9 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
         {
             var tx = orderedReturnSets.First(o => o.TransactionId == transactions.First(t => t.MethodName.Contains("Test")).GetHash());
             var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId) && Int64Value.Parser.ParseFrom(o.ReturnValue).Value == 10086).ToList();
+            Logger.LogDebug($"123454321 OrderedReturnSets: {JsonConvert.SerializeObject(orderedReturnSets.Select(t => t.TransactionId.ToHex()))}");
+            Logger.LogDebug($"123454321 InlineTx: {JsonConvert.SerializeObject(list.Select(t => t.TransactionId.ToHex()))}");
+            Logger.LogDebug($"123454321 Should be Test: {JsonConvert.SerializeObject(tx.TransactionId.ToHex())}");
             
             var binaryMerkleTree = new BinaryMerkleTree();
             binaryMerkleTree.Nodes.AddRange(list.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
@@ -150,8 +153,11 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             binaryMerkleTree.LeafCount = binaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
             binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
+            
+            Logger.LogDebug($"123454321 Inline Tree: Root: {binaryMerkleTree.Root.ToHex()}, Nodes: {JsonConvert.SerializeObject(binaryMerkleTree.Nodes.Select(t => t.ToHex()))}");
 
             var list2 = orderedReturnSets.Where(o => !list.Contains(o) && o.TransactionId != tx.TransactionId);
+            Logger.LogDebug($"123454321 OtherTx: {JsonConvert.SerializeObject(list2.Select(t => t.TransactionId.ToHex()))}");
             var newBinaryMerkleTree = new BinaryMerkleTree();
             newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
             newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
@@ -159,10 +165,9 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             GenerateBinaryMerkleTreeNodesWithLeafNodes(newBinaryMerkleTree.Nodes);
             newBinaryMerkleTree.Root = newBinaryMerkleTree.Nodes.Any() ? newBinaryMerkleTree.Nodes.Last() : Hash.Empty;
             
-
             block.Header.MerkleTreeRootOfTransactionStatus = newBinaryMerkleTree.Root;
             
-            Logger.LogDebug($"123454321 Root: {newBinaryMerkleTree.Root.ToHex()}, Nodes: {JsonConvert.SerializeObject(newBinaryMerkleTree.Nodes.Select(t => t.ToHex()))}");
+            Logger.LogDebug($"123454321 Final Tree: Root: {newBinaryMerkleTree.Root.ToHex()}, Nodes: {JsonConvert.SerializeObject(newBinaryMerkleTree.Nodes.Select(t => t.ToHex()))}");
         }
 
         Logger.LogTrace("Finish block field filling after execution.");
