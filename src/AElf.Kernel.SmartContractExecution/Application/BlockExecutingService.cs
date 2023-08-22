@@ -145,16 +145,16 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
             var list = orderedReturnSets.Where(o => !transactions.Select(t => t.GetHash()).Contains(o.TransactionId) && Int64Value.Parser.ParseFrom(o.ReturnValue).Value == 10086).ToList();
             
             var binaryMerkleTree = new BinaryMerkleTree();
-            binaryMerkleTree.Nodes.Add(GetHashCombiningTransactionAndStatus(tx.TransactionId, tx.Status));
             binaryMerkleTree.Nodes.AddRange(list.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
+            binaryMerkleTree.Nodes.Add(GetHashCombiningTransactionAndStatus(tx.TransactionId, tx.Status));
             binaryMerkleTree.LeafCount = binaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(binaryMerkleTree.Nodes);
             binaryMerkleTree.Root = binaryMerkleTree.Nodes.Any() ? binaryMerkleTree.Nodes.Last() : Hash.Empty;
 
             var list2 = orderedReturnSets.Where(o => !list.Contains(o) && o.TransactionId != tx.TransactionId);
             var newBinaryMerkleTree = new BinaryMerkleTree();
-            newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
             newBinaryMerkleTree.Nodes.AddRange(list2.Select(o => GetHashCombiningTransactionAndStatus(o.TransactionId, o.Status)));
+            newBinaryMerkleTree.Nodes.Add(binaryMerkleTree.Root);
             newBinaryMerkleTree.LeafCount = newBinaryMerkleTree.Nodes.Count;
             GenerateBinaryMerkleTreeNodesWithLeafNodes(newBinaryMerkleTree.Nodes);
             newBinaryMerkleTree.Root = newBinaryMerkleTree.Nodes.Any() ? newBinaryMerkleTree.Nodes.Last() : Hash.Empty;
@@ -167,11 +167,6 @@ public class BlockExecutingService : IBlockExecutingService, ITransientDependenc
 
         Logger.LogTrace("Finish block field filling after execution.");
         return Task.FromResult(block);
-    }
-
-    private void PrintMerkleTree(BinaryMerkleTree tree)
-    {
-        
     }
     
     private static void GenerateBinaryMerkleTreeNodesWithLeafNodes(IList<Hash> leafNodes)
