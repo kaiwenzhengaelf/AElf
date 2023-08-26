@@ -16,7 +16,10 @@ public partial class BasicContractZero
         Address author, bool isUserContract)
     {
         if (name != null)
-            Assert(State.NameAddressMapping[name] == null, "contract name has already been registered before");
+        {
+            var address = State.NameAddressMapping[name];
+            Assert(address == null, "contract name has already been registered before");
+        }
 
         var codeHash = HashHelper.ComputeFrom(code);
         AssertContractExists(codeHash);
@@ -34,7 +37,8 @@ public partial class BasicContractZero
             CodeHash = codeHash,
             IsSystemContract = isSystemContract,
             Version = 1,
-            IsUserContract = isUserContract
+            IsUserContract = isUserContract,
+            ContractName = name
         };
 
         var reg = new SmartContractRegistration
@@ -45,7 +49,8 @@ public partial class BasicContractZero
             IsSystemContract = info.IsSystemContract,
             Version = info.Version,
             ContractAddress = contractAddress,
-            IsUserContract = isUserContract
+            IsUserContract = isUserContract,
+            ContractName = name
         };
 
         var contractInfo = Context.DeploySmartContract(contractAddress, reg, name);
@@ -80,7 +85,7 @@ public partial class BasicContractZero
         return contractAddress;
     }
     
-    private void UpdateSmartContract(Address contractAddress, byte[] code, Address author, bool isUserContract)
+    private void UpdateSmartContract(Address contractAddress, byte[] code, Address author, bool isUserContract, Hash name = null)
     {
         var info = State.ContractInfos[contractAddress];
         Assert(info != null, "Contract not found.");
@@ -105,6 +110,17 @@ public partial class BasicContractZero
             ContractAddress = contractAddress,
             IsUserContract = isUserContract
         };
+        
+        if (name != null)
+        {
+            var address = State.NameAddressMapping[name];
+            Assert(address == null, "contract name has already been registered before");
+            Assert(info.ContractName == null || info.ContractName == name, "contract name can not be changed once set");
+            
+            info.ContractName = name;
+            reg.ContractName = name;
+            State.NameAddressMapping[name] = contractAddress;
+        }
         
         var contractInfo = Context.UpdateSmartContract(contractAddress, reg, null, info.ContractVersion);
         Assert(contractInfo.IsSubsequentVersion,

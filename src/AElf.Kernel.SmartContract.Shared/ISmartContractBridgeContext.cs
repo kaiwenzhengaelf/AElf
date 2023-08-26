@@ -90,6 +90,8 @@ public interface ISmartContractBridgeContext
     object ValidateStateSize(object obj);
 
     bool ECVrfVerify(byte[] pubKey, byte[] alpha, byte[] pi, out byte[] beta);
+
+    Hash GetContractNameByAddress(Address address);
 }
 
 [Serializable]

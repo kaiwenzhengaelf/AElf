@@ -35,7 +35,8 @@ public class CSharpSmartContractRunner : ISmartContractRunner
         var executive = new Executive(assembly)
         {
             ContractHash = reg.CodeHash,
-            ContractVersion = ContractVersion
+            ContractVersion = ContractVersion,
+            ContractName = reg.ContractVersion.ToString()
         };
 
         // AssemblyLoadContext needs to be called after initializing the Executive

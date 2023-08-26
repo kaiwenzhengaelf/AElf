@@ -137,6 +137,7 @@ message ContractInfo
     string contract_version = 7;
     // Indicates if the contract is the user contract.
     bool is_user_contract = 8;
+    aelf.Hash contract_name = 9;
 }
 
 message ContractDeploymentInput {
@@ -144,6 +145,7 @@ message ContractDeploymentInput {
     sint32 category = 1;
     // The byte array of the contract code.
     bytes code = 2;
+    string contract_name = 3;
 }
 
 message SystemContractDeploymentInput {
@@ -173,6 +175,7 @@ message ContractUpdateInput {
     aelf.Address address = 1;
     // The byte array of the new contract code.
     bytes code = 2;
+    string contract_name = 3;
 }
 
 message ContractCodeCheckInput{

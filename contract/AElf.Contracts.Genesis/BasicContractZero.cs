@@ -449,8 +449,8 @@ public partial class BasicContractZero : BasicContractZeroImplContainer.BasicCon
 
         var inputHash = CalculateHashFromInput(input);
         TryClearContractProposingData(inputHash, out var contractProposingInput);
-
-        var address = DeploySmartContract(null, input.Category, input.Code.ToByteArray(), false,
+        
+        var address = DeploySmartContract(string.IsNullOrWhiteSpace(input.ContractName) ? null : HashHelper.ComputeFrom(input.ContractName), input.Category, input.Code.ToByteArray(), false,
             contractProposingInput.Author, true);
         return address;
     }
@@ -462,7 +462,7 @@ public partial class BasicContractZero : BasicContractZeroImplContainer.BasicCon
         var inputHash = CalculateHashFromInput(input);
         TryClearContractProposingData(inputHash, out var proposingInput);
 
-        UpdateSmartContract(input.Address, input.Code.ToByteArray(), proposingInput.Author, true);
+        UpdateSmartContract(input.Address, input.Code.ToByteArray(), proposingInput.Author, true, string.IsNullOrWhiteSpace(input.ContractName) ? null : HashHelper.ComputeFrom(input.ContractName));
         
         return new Empty();
     }
