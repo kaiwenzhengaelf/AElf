@@ -8,6 +8,7 @@ using AElf.EconomicSystem;
 using AElf.GovernmentSystem;
 using AElf.Kernel;
 using AElf.Kernel.Consensus.AEDPoS;
+using AElf.Kernel.CrossChain;
 using AElf.Kernel.SmartContract;
 using AElf.Kernel.SmartContract.ExecutionPluginForCallThreshold;
 using AElf.Kernel.SmartContract.ExecutionPluginForMethodFee;
@@ -48,6 +49,7 @@ namespace AElf.Blockchains.BasicBaseChain;
     typeof(GrpcCrossChainAElfModule),
     typeof(GovernmentSystemAElfModule),
     typeof(EconomicSystemAElfModule),
+    typeof(CrossChainKernelAElfModule),
 
     //web api module
     typeof(WebWebAppAElfModule),
