@@ -1,4 +1,5 @@
 ﻿using AElf.Kernel;
+using AElf.Kernel.SmartContract.Application;
 using AElf.Modularity;
 using AElf.WebApp.Application.Chain.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,5 +23,6 @@ public class ChainApplicationWebAppAElfModule : AElfModule
 
         context.Services
             .AddSingleton<ITransactionResultStatusCacheProvider, TransactionResultStatusCacheProvider>();
+        context.Services.AddSingleton<IInlineTransactionProvider, InlineTransactionProvider>();
     }
 }

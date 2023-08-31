@@ -377,4 +377,9 @@ public class CSharpSmartContractContext : ISmartContractBridgeContext
     {
         return SmartContractBridgeContextImplementation.ECVrfVerify(pubKey, alpha, pi, out beta);
     }
+
+    public Hash GetInlineTransactionMerkleTreeRoot(long height, Hash hash)
+    {
+        return SmartContractBridgeContextImplementation.GetInlineTransactionMerkleTreeRoot(height, hash);
+    }
 }

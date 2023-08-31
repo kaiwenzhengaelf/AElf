@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AElf.Kernel.Blockchain.Application;
 using AElf.Kernel.Blockchain.Domain;
 using AElf.Kernel.Miner.Application;
 using AElf.Kernel.SmartContract.Application;
+using AElf.Standards.ACS0;
 using AElf.Standards.ACS7;
 using AElf.Types;
 using Google.Protobuf;
@@ -45,7 +47,7 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
 
         var inlineTransactionInfo = await _inlineTransactionProvider.GetInlineTransactionInfoAsync(chainContext);
 
-        if (inlineTransactionInfo == null || inlineTransactionInfo.List.IsNullOrEmpty())
+        if (inlineTransactionInfo == null || inlineTransactionInfo.TransactionIds.IsNullOrEmpty())
             return generatedTransactions;
 
         var crossChainContractAddress = await _smartContractAddressService.GetAddressByContractNameAsync(
@@ -53,14 +55,19 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
 
         if (crossChainContractAddress == null) return generatedTransactions;
 
+        var info = await Test(preBlockHeight, preBlockHash);
+
         var generatedTransaction = new Transaction
         {
             From = from,
-            MethodName = nameof(ACS7Container.ACS7Stub.GetChainInitializationData),
+            MethodName = nameof(ACS7Container.ACS7Stub.IndexTest),
             To = crossChainContractAddress,
             RefBlockNumber = preBlockHeight,
             RefBlockPrefix = BlockHelper.GetRefBlockPrefix(preBlockHash),
-            Params = new Empty().ToByteString()
+            Params = new IndexTestInput
+            {
+                MerkleTreeRoot = info.MerkleTreeRootOfInlineTransactions
+            }.ToByteString()
         };
         generatedTransactions.Add(generatedTransaction);
 
@@ -69,21 +76,58 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
         return generatedTransactions;
     }
 
-    private async Task Test(Hash preBlockHash)
+    private async Task<InlineTransactionInfo> Test(long preBlockHeight, Hash preBlockHash)
     {
         var block = await _blockchainService.GetBlockByHashAsync(preBlockHash);
         var transactions =
             await _transactionResultManager.GetTransactionResultsAsync(block.TransactionIds.ToList(), preBlockHash);
 
-        var inlineLogs = new List<LogEvent>();
+        var infos = new Dictionary<Hash, Transaction>();
         foreach (var tx in transactions)
         {
-            inlineLogs.AddRange(tx.Logs.Where(log => log.Name.Contains("Inline")));
+            var logs = tx.Logs.Where(t => t.Name.Contains("InlineLogEvent")).ToList();
+            if (!logs.IsNullOrEmpty())
+            {
+                var index = 0;
+                foreach (var log in logs)
+                {
+                    var inlineLogEvent = InlineLogEvent.Parser.ParseFrom(log.NonIndexed);
+                    var transaction = new Transaction
+                    {
+                        From = inlineLogEvent.From,
+                        To = inlineLogEvent.To,
+                        MethodName = inlineLogEvent.MethodName,
+                        Params = inlineLogEvent.Params
+                    };
+                    infos.Add(HashHelper.ConcatAndCompute(HashHelper.ConcatAndCompute(tx.TransactionId, transaction.GetHash()), HashHelper.ComputeFrom(index.ToString())), transaction);
+                    index++;
+                }
+            }
         }
+        
+        var merkleTreeRootOfInlineTransactions = BinaryMerkleTree.FromLeafNodes(infos.Select(t => GetHashCombiningTransactionAndStatus(t.Key, TransactionResultStatus.Mined))).Root;
+
+        var inlineTransactionInfo = new InlineTransactionInfo
+        {
+            TransactionIds = infos,
+            MerkleTreeRootOfInlineTransactions = merkleTreeRootOfInlineTransactions
+        };
 
         await _inlineTransactionProvider.SetInlineTransactionInfoAsync(new BlockIndex
         {
-            BlockHash = preBlockHash
-        }, new InlineTransactionInfo());
+            BlockHash = preBlockHash,
+            BlockHeight = preBlockHeight
+        }, inlineTransactionInfo);
+
+        return inlineTransactionInfo;
+    }
+    
+    private Hash GetHashCombiningTransactionAndStatus(Hash txId,
+        TransactionResultStatus executionReturnStatus)
+    {
+        // combine tx result status
+        var rawBytes = txId.ToByteArray().Concat(Encoding.UTF8.GetBytes(executionReturnStatus.ToString()))
+            .ToArray();
+        return HashHelper.ComputeFrom(rawBytes);
     }
 }

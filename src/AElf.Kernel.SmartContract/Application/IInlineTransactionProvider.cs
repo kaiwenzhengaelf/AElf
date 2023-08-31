@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AElf.Types;
 using Volo.Abp.DependencyInjection;
 
 namespace AElf.Kernel.SmartContract.Application;
@@ -40,5 +41,6 @@ public class InlineTransactionProvider : BlockExecutedDataBaseProvider<InlineTra
 
 public class InlineTransactionInfo
 {
-    public List<string> List { get; set; }
+    public Hash MerkleTreeRootOfInlineTransactions { get; set; }
+    public Dictionary<Hash, Transaction> TransactionIds { get; set; }
 }

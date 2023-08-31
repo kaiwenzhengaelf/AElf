@@ -310,4 +310,9 @@ public partial class CrossChainContract : CrossChainContractImplContainer.CrossC
     }
 
     #endregion Cross chain actions
+
+    public override Empty IndexTest(IndexTestInput input)
+    {
+        return new Empty();
+    }
 }

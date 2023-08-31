@@ -16,5 +16,6 @@ public class SmartContractAElfModule : AElfModule
         context.Services.AddSingleton<IPlainTransactionExecutingService, PlainTransactionExecutingService>();
         context.Services.AddTransient(typeof(IContractReaderFactory<>), typeof(ContractReaderFactory<>));
         context.Services.AddSingleton(typeof(ILogEventProcessingService<>), typeof(LogEventProcessingService<>));
+        context.Services.AddSingleton<IInlineTransactionProvider, InlineTransactionProvider>();
     }
 }

@@ -283,3 +283,12 @@ message SetContractAuthorInput{
 message DeployUserSmartContractOutput{
     aelf.Hash code_hash = 1;
 }
+
+message InlineLogEvent
+{
+    option (aelf.is_event) = true;
+    aelf.Address from = 1;
+    aelf.Address to = 2;
+    string method_name = 3;
+    bytes params = 4;
+}

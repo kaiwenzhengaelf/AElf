@@ -28,6 +28,8 @@ public interface ITransactionResultAppService
         int limit = 10);
 
     Task<MerklePathDto> GetMerklePathByTransactionIdAsync(string transactionId);
+
+    Task<MerklePathDto> GetMerklePathTest(string transactionId, string blockHash);
 }
 
 public class TransactionResultAppService : AElfAppService, ITransactionResultAppService
@@ -39,6 +41,8 @@ public class TransactionResultAppService : AElfAppService, ITransactionResultApp
     private readonly ITransactionResultProxyService _transactionResultProxyService;
     private readonly ITransactionResultStatusCacheProvider _transactionResultStatusCacheProvider;
     private readonly WebAppOptions _webAppOptions;
+    
+    private readonly IInlineTransactionProvider _inlineTransactionProvider;
 
     public TransactionResultAppService(ITransactionResultProxyService transactionResultProxyService,
         ITransactionManager transactionManager,
@@ -46,7 +50,7 @@ public class TransactionResultAppService : AElfAppService, ITransactionResultApp
         ITransactionReadOnlyExecutionService transactionReadOnlyExecutionService,
         IObjectMapper<ChainApplicationWebAppAElfModule> objectMapper,
         ITransactionResultStatusCacheProvider transactionResultStatusCacheProvider,
-        IOptionsMonitor<WebAppOptions> optionsSnapshot)
+        IOptionsMonitor<WebAppOptions> optionsSnapshot, IInlineTransactionProvider inlineTransactionProvider)
     {
         _transactionResultProxyService = transactionResultProxyService;
         _transactionManager = transactionManager;
@@ -54,6 +58,7 @@ public class TransactionResultAppService : AElfAppService, ITransactionResultApp
         _transactionReadOnlyExecutionService = transactionReadOnlyExecutionService;
         _objectMapper = objectMapper;
         _transactionResultStatusCacheProvider = transactionResultStatusCacheProvider;
+        _inlineTransactionProvider = inlineTransactionProvider;
         _webAppOptions = optionsSnapshot.CurrentValue;
 
         Logger = NullLogger<TransactionResultAppService>.Instance;
@@ -315,5 +320,36 @@ public class TransactionResultAppService : AElfAppService, ITransactionResultApp
         {
             Logger.LogError(exception, "Failed to parse transaction params: {params}", transaction.Params);
         }
+    }
+
+    public async Task<MerklePathDto> GetMerklePathTest(string transactionId, string hash)
+    {
+        Hash transactionIdHash;
+        try
+        {
+            transactionIdHash = Hash.LoadFromHex(transactionId);
+        }
+        catch
+        {
+            throw new UserFriendlyException(Error.Message[Error.InvalidTransactionId],
+                Error.InvalidTransactionId.ToString());
+        }
+        
+        var blockHash = Hash.LoadFromHex(hash);
+        var blockInfo = await _blockchainService.GetBlockByHashAsync(blockHash);
+        var info = await _inlineTransactionProvider.GetInlineTransactionInfoAsync(new ChainContext
+        {
+            BlockHash = blockHash,
+            BlockHeight = blockInfo.Height
+        });
+        var index = info.TransactionIds.Keys.ToList().IndexOf(transactionIdHash);
+        if (index == -1) throw new UserFriendlyException(Error.Message[Error.NotFound], Error.NotFound.ToString());
+        var leafNodes = await GetLeafNodesAsync(info.TransactionIds.Keys);
+
+        var binaryMerkleTree = BinaryMerkleTree.FromLeafNodes(leafNodes);
+        var path = binaryMerkleTree.GenerateMerklePath(index);
+        var merklePath = _objectMapper.Map<MerklePath, MerklePathDto>(path);
+
+        return merklePath;
     }
 }

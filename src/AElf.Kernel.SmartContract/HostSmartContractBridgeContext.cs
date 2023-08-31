@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AElf.Cryptography;
 using AElf.CSharp.Core;
+using AElf.CSharp.Core.Extension;
 using AElf.Kernel.Account.Application;
 using AElf.Kernel.SmartContract.Application;
+using AElf.Standards.ACS0;
 using AElf.Types;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -33,16 +35,18 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
     private readonly Lazy<ICachedStateProvider> _lazyStateProvider;
     private readonly ISmartContractBridgeService _smartContractBridgeService;
     private readonly ITransactionReadOnlyExecutionService _transactionReadOnlyExecutionService;
+    private readonly IInlineTransactionProvider _inlineTransactionProvider;
 
     private ITransactionContext _transactionContext;
 
     public HostSmartContractBridgeContext(ISmartContractBridgeService smartContractBridgeService,
         ITransactionReadOnlyExecutionService transactionReadOnlyExecutionService, IAccountService accountService,
-        IOptionsSnapshot<HostSmartContractBridgeContextOptions> options)
+        IOptionsSnapshot<HostSmartContractBridgeContextOptions> options, IInlineTransactionProvider inlineTransactionProvider)
     {
         _smartContractBridgeService = smartContractBridgeService;
         _transactionReadOnlyExecutionService = transactionReadOnlyExecutionService;
         _accountService = accountService;
+        _inlineTransactionProvider = inlineTransactionProvider;
 
         Variables = new ContextVariableDictionary(options.Value.ContextVariables);
 
@@ -240,6 +244,13 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
             MethodName = methodName,
             Params = args
         });
+        FireLogEvent(new InlineLogEvent
+        {
+            From = ConvertVirtualAddressToContractAddress(fromVirtualAddress, Self),
+            To = toAddress,
+            MethodName = methodName,
+            Params = args
+        }.ToLogEvent());
     }
 
     public void SendVirtualInlineBySystemContract(Hash fromVirtualAddress, Address toAddress, string methodName,
@@ -363,5 +374,14 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
         }
 
         return true;
+    }
+
+    public Hash GetInlineTransactionMerkleTreeRoot(long height, Hash hash)
+    {
+        return AsyncHelper.RunSync(() => _inlineTransactionProvider.GetInlineTransactionInfoAsync(new ChainContext
+        {
+            BlockHash = hash,
+            BlockHeight = height
+        })).MerkleTreeRootOfInlineTransactions;
     }
 }
