@@ -56,6 +56,10 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
         if (crossChainContractAddress == null) return generatedTransactions;
 
         var info = await Test(preBlockHeight, preBlockHash);
+        if (info.TransactionIds.IsNullOrEmpty())
+        {
+            return generatedTransactions;
+        }
 
         var generatedTransaction = new Transaction
         {
@@ -72,6 +76,7 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
         generatedTransactions.Add(generatedTransaction);
 
         Logger.LogTrace("Inline cross chain system transaction generated.");
+        Logger.LogDebug($"123454321 System Transaction Id: {generatedTransaction.GetHash().ToHex()}");
 
         return generatedTransactions;
     }
@@ -92,33 +97,44 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
                 foreach (var log in logs)
                 {
                     var inlineLogEvent = InlineLogEvent.Parser.ParseFrom(log.NonIndexed);
-                    var transaction = new Transaction
+                    if (inlineLogEvent.MethodName == "TestInline")
                     {
-                        From = inlineLogEvent.From,
-                        To = inlineLogEvent.To,
-                        MethodName = inlineLogEvent.MethodName,
-                        Params = inlineLogEvent.Params
-                    };
-                    infos.Add(HashHelper.ConcatAndCompute(HashHelper.ConcatAndCompute(tx.TransactionId, transaction.GetHash()), HashHelper.ComputeFrom(index.ToString())), transaction);
-                    index++;
+                        var transaction = new Transaction
+                        {
+                            From = inlineLogEvent.From,
+                            To = inlineLogEvent.To,
+                            MethodName = inlineLogEvent.MethodName,
+                            Params = inlineLogEvent.Params
+                        };
+                        var id = HashHelper.ConcatAndCompute(
+                            HashHelper.ConcatAndCompute(tx.TransactionId, transaction.GetHash()),
+                            HashHelper.ComputeFrom(index.ToString()));
+                        Logger.LogDebug($"index: {index}, id: {id.ToHex()}, block hash: {preBlockHash}, block height: {preBlockHeight}");
+                        infos.Add(id, transaction);
+                        index++;
+                    }
                 }
             }
         }
+
+        var inlineTransactionInfo = new InlineTransactionInfo();
+        if (!infos.IsNullOrEmpty())
+        {
+            var merkleTreeRootOfInlineTransactions = BinaryMerkleTree.FromLeafNodes(infos.Select(t => GetHashCombiningTransactionAndStatus(t.Key, TransactionResultStatus.Mined))).Root;
+
+            inlineTransactionInfo = new InlineTransactionInfo
+            {
+                TransactionIds = infos,
+                MerkleTreeRootOfInlineTransactions = merkleTreeRootOfInlineTransactions
+            };
+
+            await _inlineTransactionProvider.SetInlineTransactionInfoAsync(new BlockIndex
+            {
+                BlockHash = preBlockHash,
+                BlockHeight = preBlockHeight
+            }, inlineTransactionInfo);
+        }
         
-        var merkleTreeRootOfInlineTransactions = BinaryMerkleTree.FromLeafNodes(infos.Select(t => GetHashCombiningTransactionAndStatus(t.Key, TransactionResultStatus.Mined))).Root;
-
-        var inlineTransactionInfo = new InlineTransactionInfo
-        {
-            TransactionIds = infos,
-            MerkleTreeRootOfInlineTransactions = merkleTreeRootOfInlineTransactions
-        };
-
-        await _inlineTransactionProvider.SetInlineTransactionInfoAsync(new BlockIndex
-        {
-            BlockHash = preBlockHash,
-            BlockHeight = preBlockHeight
-        }, inlineTransactionInfo);
-
         return inlineTransactionInfo;
     }
     

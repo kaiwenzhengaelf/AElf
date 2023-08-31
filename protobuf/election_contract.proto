@@ -101,6 +101,12 @@ service ElectionContract {
     
     rpc SetProfitsReceiver (SetProfitsReceiverInput) returns (google.protobuf.Empty) {
     }
+    
+    rpc Test (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    }
+    
+    rpc TestInline(TestInlineInput) returns (google.protobuf.Empty) {
+    }
 
     // Views
     
@@ -242,6 +248,10 @@ service ElectionContract {
     rpc GetManagedPubkeys (aelf.Address) returns (PubkeyList) {
         option (aelf.is_view) = true;
     }
+}
+
+message TestInlineInput {
+    string input = 1;
 }
 
 message InitialElectionContractInput {

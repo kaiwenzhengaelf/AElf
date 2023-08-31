@@ -7,6 +7,7 @@ using AElf.Contracts.Vote;
 using AElf.CSharp.Core;
 using AElf.Sdk.CSharp;
 using AElf.Types;
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 namespace AElf.Contracts.Election;
@@ -816,4 +817,25 @@ public partial class ElectionContract
     }
 
     #endregion
+
+    public override Empty Test(Empty input)
+    {
+        Context.SendVirtualInline(HashHelper.ComputeFrom("test"), Context.Self, "TestInline", new TestInlineInput
+        {
+            Input = "test"
+        }.ToByteString());
+        
+        Context.SendVirtualInline(HashHelper.ComputeFrom("test"), Context.Self, "TestInline", new TestInlineInput
+        {
+            Input = "test"
+        }.ToByteString());
+
+        return new Empty();
+    }
+
+    public override Empty TestInline(TestInlineInput input)
+    {
+        input.Input += "test";
+        return new Empty();
+    }
 }
