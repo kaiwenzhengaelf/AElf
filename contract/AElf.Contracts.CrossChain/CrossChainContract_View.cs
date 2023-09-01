@@ -49,10 +49,11 @@ public partial class CrossChainContract
     {
         var parentChainHeight = input.ParentChainHeight;
         var merkleTreeRoot = GetMerkleTreeRoot(input.VerifiedChainId, parentChainHeight);
+        Context.LogDebug(()=>$"System merkle tree root: {merkleTreeRoot.ToHex()}");
         Assert(merkleTreeRoot != null,
             $"Parent chain block at height {parentChainHeight} is not recorded.");
         var rootCalculated = ComputeRootWithTransactionStatusMerklePath(input.SystemTransactionId, input.Path);
-
+        Context.LogDebug(()=>$"Calculated system merkle tree root: {merkleTreeRoot.ToHex()}");
         if (merkleTreeRoot != rootCalculated)
         {
             return new BoolValue
@@ -61,8 +62,11 @@ public partial class CrossChainContract
             };
         }
 
-        merkleTreeRoot = Context.GetInlineTransactionMerkleTreeRoot(parentChainHeight, input.ParentBlockHash);
+        
+        merkleTreeRoot = Context.GetInlineTransactionMerkleTreeRoot(parentChainHeight - 1, input.ParentBlockHash);
+        Context.LogDebug(()=>$"Inline merkle tree root: {merkleTreeRoot.ToHex()}");
         rootCalculated = ComputeRootWithTransactionStatusMerklePath(input.TransactionId, input.InlinePath);
+        Context.LogDebug(()=>$"Calculated inline merkle tree root: {merkleTreeRoot.ToHex()}");
 
         return new BoolValue { Value = merkleTreeRoot == rootCalculated };
     }
