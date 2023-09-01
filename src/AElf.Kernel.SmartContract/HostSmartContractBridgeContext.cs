@@ -379,10 +379,10 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
 
     public Hash GetInlineTransactionMerkleTreeRoot(long height, Hash hash)
     {
-        return AsyncHelper.RunSync(() => _inlineTransactionProvider.GetInlineTransactionInfoAsync(new ChainContext
+        return AsyncHelper.RunSync(() => _inlineTransactionProvider.GetInlineTransactionInfoAsync(new BlockIndex
         {
             BlockHash = hash,
             BlockHeight = height
-        })).MerkleTreeRoot;
+        }))?.MerkleTreeRoot;
     }
 }

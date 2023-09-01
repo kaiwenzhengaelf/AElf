@@ -28,11 +28,10 @@ internal class InlineTransactionProvider : BlockExecutedDataBaseProvider<TestInl
     public Task<InlineTransactionInfo> GetInlineTransactionInfoAsync(IBlockIndex blockIndex)
     {
         var inlineTransactionInfo = GetBlockExecutedData(blockIndex);
-        var info = inlineTransactionInfo;
         return Task.FromResult(new InlineTransactionInfo
         {
-            MerkleTreeRoot = info?.MerkleTreeRoot,
-            TransactionIds = info?.TransactionIds.ToDictionary(pair => Hash.LoadFromHex(pair.Key), pair => pair.Value)
+            MerkleTreeRoot = inlineTransactionInfo?.MerkleTreeRoot,
+            TransactionIds = inlineTransactionInfo?.TransactionIds.ToDictionary(pair => Hash.LoadFromHex(pair.Key), pair => pair.Value)
         });
     }
 

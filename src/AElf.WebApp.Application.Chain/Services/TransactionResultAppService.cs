@@ -337,7 +337,7 @@ public class TransactionResultAppService : AElfAppService, ITransactionResultApp
         
         var blockHash = Hash.LoadFromHex(hash);
         var blockInfo = await _blockchainService.GetBlockByHashAsync(blockHash);
-        var info = await _inlineTransactionProvider.GetInlineTransactionInfoAsync(new ChainContext
+        var info = await _inlineTransactionProvider.GetInlineTransactionInfoAsync(new BlockIndex
         {
             BlockHash = blockHash,
             BlockHeight = blockInfo.Height
