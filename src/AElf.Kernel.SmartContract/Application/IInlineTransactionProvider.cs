@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using AElf.Standards.ACS0;
 using AElf.Types;
+using Google.Protobuf.Collections;
 using Volo.Abp.DependencyInjection;
 
 namespace AElf.Kernel.SmartContract.Application;
@@ -12,12 +15,12 @@ public interface IInlineTransactionProvider
     Task SetInlineTransactionInfoAsync(IBlockIndex blockIndex, InlineTransactionInfo inlineTransactionInfo);
 }
 
-public class InlineTransactionProvider : BlockExecutedDataBaseProvider<InlineTransactionInfo>, IInlineTransactionProvider, ISingletonDependency
+internal class InlineTransactionProvider : BlockExecutedDataBaseProvider<TestInlineTransactionInfo>, IInlineTransactionProvider, ISingletonDependency
 {
     private const string BlockExecutedDataName = nameof(InlineTransactionInfo);
 
     public InlineTransactionProvider(
-        ICachedBlockchainExecutedDataService<InlineTransactionInfo> cachedBlockchainExecutedDataService) : base(
+        ICachedBlockchainExecutedDataService<TestInlineTransactionInfo> cachedBlockchainExecutedDataService) : base(
         cachedBlockchainExecutedDataService)
     {
     }
@@ -25,12 +28,26 @@ public class InlineTransactionProvider : BlockExecutedDataBaseProvider<InlineTra
     public Task<InlineTransactionInfo> GetInlineTransactionInfoAsync(IChainContext chainContext)
     {
         var inlineTransactionInfo = GetBlockExecutedData(chainContext);
-        return Task.FromResult(inlineTransactionInfo);
+        var info = inlineTransactionInfo;
+        return Task.FromResult(new InlineTransactionInfo
+        {
+            MerkleTreeRoot = info.MerkleTreeRoot,
+            TransactionIds = info.TransactionIds.ToDictionary(pair => Hash.LoadFromHex(pair.Key), pair => pair.Value)
+        });
     }
 
     public async Task SetInlineTransactionInfoAsync(IBlockIndex blockIndex, InlineTransactionInfo inlineTransactionInfo)
     {
-        await AddBlockExecutedDataAsync(blockIndex, inlineTransactionInfo);
+        var map = new MapField<string, Transaction>();
+        foreach (var pair in inlineTransactionInfo.TransactionIds)
+        {
+            map.Add(pair.Key.ToHex(), pair.Value);
+        }
+        await AddBlockExecutedDataAsync(blockIndex, new TestInlineTransactionInfo
+        {
+            MerkleTreeRoot = inlineTransactionInfo.MerkleTreeRoot,
+            TransactionIds = { map }
+        });
     }
 
     protected override string GetBlockExecutedDataName()
@@ -41,6 +58,6 @@ public class InlineTransactionProvider : BlockExecutedDataBaseProvider<InlineTra
 
 public class InlineTransactionInfo
 {
-    public Hash MerkleTreeRootOfInlineTransactions { get; set; }
     public Dictionary<Hash, Transaction> TransactionIds { get; set; }
+    public Hash MerkleTreeRoot { get; set; }
 }

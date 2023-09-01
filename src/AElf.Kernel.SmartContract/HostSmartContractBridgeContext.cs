@@ -383,6 +383,6 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
         {
             BlockHash = hash,
             BlockHeight = height
-        })).MerkleTreeRootOfInlineTransactions;
+        })).MerkleTreeRoot;
     }
 }

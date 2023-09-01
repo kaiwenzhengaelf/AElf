@@ -10,8 +10,10 @@ using AElf.Standards.ACS0;
 using AElf.Standards.ACS7;
 using AElf.Types;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using InlineTransactionInfo = AElf.Kernel.SmartContract.Application.InlineTransactionInfo;
 
 namespace AElf.Kernel.CrossChain;
 
@@ -44,11 +46,6 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
             BlockHash = preBlockHash, BlockHeight = preBlockHeight
         };
 
-        var inlineTransactionInfo = await _inlineTransactionProvider.GetInlineTransactionInfoAsync(chainContext);
-
-        if (inlineTransactionInfo == null || inlineTransactionInfo.TransactionIds.IsNullOrEmpty())
-            return generatedTransactions;
-
         var crossChainContractAddress = await _smartContractAddressService.GetAddressByContractNameAsync(
             chainContext, CrossChainSmartContractAddressNameProvider.StringName);
 
@@ -69,7 +66,7 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
             RefBlockPrefix = BlockHelper.GetRefBlockPrefix(preBlockHash),
             Params = new IndexTestInput
             {
-                MerkleTreeRoot = info.MerkleTreeRootOfInlineTransactions
+                MerkleTreeRoot = info.MerkleTreeRoot
             }.ToByteString()
         };
         generatedTransactions.Add(generatedTransaction);
@@ -120,11 +117,11 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
         if (!infos.IsNullOrEmpty())
         {
             var merkleTreeRootOfInlineTransactions = BinaryMerkleTree.FromLeafNodes(infos.Select(t => GetHashCombiningTransactionAndStatus(t.Key, TransactionResultStatus.Mined))).Root;
-
+            
             inlineTransactionInfo = new InlineTransactionInfo
             {
                 TransactionIds = infos,
-                MerkleTreeRootOfInlineTransactions = merkleTreeRootOfInlineTransactions
+                MerkleTreeRoot = merkleTreeRootOfInlineTransactions
             };
 
             await _inlineTransactionProvider.SetInlineTransactionInfoAsync(new BlockIndex

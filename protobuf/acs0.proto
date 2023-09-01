@@ -292,3 +292,8 @@ message InlineLogEvent
     string method_name = 3;
     bytes params = 4;
 }
+
+message TestInlineTransactionInfo {
+    aelf.Hash merkle_tree_root = 1;
+    map<string, aelf.Transaction> transaction_ids = 2;
+}

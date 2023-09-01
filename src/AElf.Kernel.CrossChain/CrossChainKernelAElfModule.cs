@@ -15,7 +15,6 @@ public class CrossChainKernelAElfModule : AElfModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddSingleton<ISystemTransactionGenerator, InlineSystemTransactionGenerator>();
-        context.Services.AddSingleton<IInlineTransactionProvider, InlineTransactionProvider>();
         context.Services.AddSingleton<IBlockchainService, FullBlockchainService>();
         context.Services.AddSingleton<ITransactionResultManager, TransactionResultManager>();
         context.Services.AddSingleton<ISmartContractAddressService, SmartContractAddressService>();
