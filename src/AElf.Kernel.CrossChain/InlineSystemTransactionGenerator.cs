@@ -89,14 +89,14 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
         var infos = new Dictionary<Hash, Transaction>();
         foreach (var tx in transactions)
         {
-            var logs = tx.Logs.Where(t => t.Name.Contains("InlineLogEvent")).ToList();
+            var logs = tx.Logs.Where(t => t.Name.Contains("Inline")).ToList();
             if (!logs.IsNullOrEmpty())
             {
                 var index = 0;
                 foreach (var log in logs)
                 {
                     var inlineLogEvent = InlineLogEvent.Parser.ParseFrom(log.NonIndexed);
-                    if (inlineLogEvent.MethodName == "TestInline")
+                    if (inlineLogEvent.MethodName.Contains("Test"))
                     {
                         var transaction = new Transaction
                         {
@@ -108,7 +108,7 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
                         var id = HashHelper.ConcatAndCompute(
                             HashHelper.ConcatAndCompute(tx.TransactionId, transaction.GetHash()),
                             HashHelper.ComputeFrom(index.ToString()));
-                        Logger.LogDebug($"index: {index}, id: {id.ToHex()}, block hash: {preBlockHash}, block height: {preBlockHeight}");
+                        Logger.LogDebug($"123454321 index: {index}, id: {id.ToHex()}, block hash: {preBlockHash}, block height: {preBlockHeight}");
                         infos.Add(id, transaction);
                         index++;
                     }
