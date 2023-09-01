@@ -61,7 +61,7 @@ public partial class CrossChainContract
             };
         }
 
-        merkleTreeRoot = Context.GetInlineTransactionMerkleTreeRoot(parentChainHeight - 1, input.ParentBlockHash);
+        merkleTreeRoot = Context.GetInlineTransactionMerkleTreeRoot(parentChainHeight, input.ParentBlockHash);
         rootCalculated = ComputeRootWithTransactionStatusMerklePath(input.TransactionId, input.InlinePath);
 
         return new BoolValue { Value = merkleTreeRoot == rootCalculated };
