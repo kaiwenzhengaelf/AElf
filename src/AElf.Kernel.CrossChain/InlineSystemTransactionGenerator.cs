@@ -10,7 +10,6 @@ using AElf.Standards.ACS0;
 using AElf.Standards.ACS7;
 using AElf.Types;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
