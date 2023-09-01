@@ -31,8 +31,8 @@ internal class InlineTransactionProvider : BlockExecutedDataBaseProvider<TestInl
         var info = inlineTransactionInfo;
         return Task.FromResult(new InlineTransactionInfo
         {
-            MerkleTreeRoot = info.MerkleTreeRoot,
-            TransactionIds = info.TransactionIds.ToDictionary(pair => Hash.LoadFromHex(pair.Key), pair => pair.Value)
+            MerkleTreeRoot = info?.MerkleTreeRoot,
+            TransactionIds = info?.TransactionIds.ToDictionary(pair => Hash.LoadFromHex(pair.Key), pair => pair.Value)
         });
     }
 
