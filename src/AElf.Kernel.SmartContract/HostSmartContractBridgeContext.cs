@@ -244,13 +244,14 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
             MethodName = methodName,
             Params = args
         });
-        FireLogEvent(new InlineLogEvent
+        var log = new InlineLogEvent
         {
             From = ConvertVirtualAddressToContractAddress(fromVirtualAddress, Self),
             To = toAddress,
             MethodName = methodName,
             Params = args
-        }.ToLogEvent());
+        };
+        FireLogEvent(log.ToLogEvent(Self));
     }
 
     public void SendVirtualInlineBySystemContract(Hash fromVirtualAddress, Address toAddress, string methodName,
