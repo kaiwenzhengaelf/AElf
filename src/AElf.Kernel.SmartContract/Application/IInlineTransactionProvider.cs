@@ -10,7 +10,7 @@ namespace AElf.Kernel.SmartContract.Application;
 
 public interface IInlineTransactionProvider
 {
-    Task<InlineTransactionInfo> GetInlineTransactionInfoAsync(IChainContext chainContext);
+    Task<InlineTransactionInfo> GetInlineTransactionInfoAsync(IBlockIndex blockIndex);
 
     Task SetInlineTransactionInfoAsync(IBlockIndex blockIndex, InlineTransactionInfo inlineTransactionInfo);
 }
@@ -25,9 +25,9 @@ internal class InlineTransactionProvider : BlockExecutedDataBaseProvider<TestInl
     {
     }
 
-    public Task<InlineTransactionInfo> GetInlineTransactionInfoAsync(IChainContext chainContext)
+    public Task<InlineTransactionInfo> GetInlineTransactionInfoAsync(IBlockIndex blockIndex)
     {
-        var inlineTransactionInfo = GetBlockExecutedData(chainContext);
+        var inlineTransactionInfo = GetBlockExecutedData(blockIndex);
         var info = inlineTransactionInfo;
         return Task.FromResult(new InlineTransactionInfo
         {
