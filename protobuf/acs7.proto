@@ -309,9 +309,5 @@ message VerifyTransactionTestInput {
     aelf.MerklePath path = 2;
     // The height of parent chain that indexing this transaction.
     int64 parent_chain_height = 3;
-    // The chain if to verify.
-    int32 verified_chain_id = 4;
-    aelf.Hash system_transaction_id = 5;
-    aelf.Hash parent_block_hash = 6;
-    aelf.MerklePath inline_path = 7;
+    aelf.Hash parent_block_hash = 4;
 }
