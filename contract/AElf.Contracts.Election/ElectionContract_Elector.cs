@@ -840,9 +840,8 @@ public partial class ElectionContract
         return new Empty();
     }
 
-    public override Empty TestView(TestViewInput input)
+    public override Hash TestView(TestViewInput input)
     {
-        var test = Context.GetInlineTransactionMerkleTreeRoot(input.Height, input.Hash);
-        return new Empty();
+        return Context.GetInlineTransactionMerkleTreeRoot(input.Height, input.Hash);
     }
 }
