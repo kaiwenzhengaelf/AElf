@@ -61,8 +61,7 @@ public partial class CrossChainContract
                 Value = false
             };
         }
-
-
+        
         merkleTreeRoot = Context.GetInlineTransactionMerkleTreeRoot(parentChainHeight - 1, input.ParentBlockHash);
         Context.LogDebug(() => $"Inline merkle tree root: {merkleTreeRoot?.ToHex()}");
         rootCalculated = ComputeRootWithTransactionStatusMerklePath(input.TransactionId, input.InlinePath);

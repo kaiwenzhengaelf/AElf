@@ -107,6 +107,9 @@ service ElectionContract {
     
     rpc TestInline(TestInlineInput) returns (google.protobuf.Empty) {
     }
+    
+    rpc TestView (TestViewInput) returns (google.protobuf.Empty) {
+    }
 
     // Views
     
@@ -252,6 +255,11 @@ service ElectionContract {
 
 message TestInlineInput {
     string input = 1;
+}
+
+message TestViewInput {
+    int64 height = 1;
+    aelf.Hash hash = 2;
 }
 
 message InitialElectionContractInput {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using AElf.Contracts.MultiToken;
 using AElf.Contracts.Profit;
@@ -836,6 +837,12 @@ public partial class ElectionContract
     public override Empty TestInline(TestInlineInput input)
     {
         input.Input += "test";
+        return new Empty();
+    }
+
+    public override Empty TestView(TestViewInput input)
+    {
+        var test = Context.GetInlineTransactionMerkleTreeRoot(input.Height, input.Hash);
         return new Empty();
     }
 }

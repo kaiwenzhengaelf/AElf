@@ -105,7 +105,7 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
                         var id = HashHelper.ConcatAndCompute(
                             HashHelper.ConcatAndCompute(tx.TransactionId, transaction.GetHash()),
                             HashHelper.ComputeFrom(index.ToString()));
-                        Logger.LogDebug($"123454321 index: {index}, id: {id.ToHex()}, block hash: {preBlockHash}, block height: {preBlockHeight}");
+                        Logger.LogDebug($"123454321 index: {index}, inline id: {id.ToHex()}, inline getHash: {transaction.GetHash().ToHex()}, block hash: {preBlockHash}, block height: {preBlockHeight}");
                         infos.Add(id, transaction);
                         index++;
                     }
@@ -123,6 +123,8 @@ public class InlineSystemTransactionGenerator : ISystemTransactionGenerator
                 TransactionIds = infos,
                 MerkleTreeRoot = merkleTreeRootOfInlineTransactions
             };
+            
+            Logger.LogDebug($"123454321 SetExecutedBlockData block hash: {preBlockHash}, block height: {preBlockHeight}");
 
             await _inlineTransactionProvider.SetInlineTransactionInfoAsync(new BlockIndex
             {
