@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using AElf.CSharp.Core.Extension;
+using AElf.Kernel.Infrastructure;
 using AElf.Kernel.SmartContract.Application;
 using AElf.Standards.ACS0;
 using AElf.Types;
@@ -59,6 +60,14 @@ public class CodeUpdatedLogEventProcessor : LogEventProcessorBase, IBlockAccepte
         await _smartContractRegistrationProvider.SetSmartContractRegistrationAsync(chainContext, eventData.Address,
             smartContractRegistration);
         _smartContractExecutiveService.CleanExecutive(eventData.Address);
+        
+        if (eventData.Name != null)
+        {
+            await _smartContractAddressService.SetSmartContractAddressAsync(chainContext, eventData.Name.ToStorageKey(),
+                eventData.Address);
+            await _smartContractAddressService.SetSmartContractNameAsync(chainContext, eventData.Address.ToStorageKey(),
+                eventData.Name);
+        }
 
         Logger.LogDebug($"Updated contract {eventData}");
     }

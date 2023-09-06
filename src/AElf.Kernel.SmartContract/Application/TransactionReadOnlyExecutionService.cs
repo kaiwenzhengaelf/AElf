@@ -109,22 +109,4 @@ public class TransactionReadOnlyExecutionService : ITransactionReadOnlyExecution
                 await _smartContractExecutiveService.PutExecutiveAsync(chainContext, address, executive);
         }
     }
-
-    public async Task<Hash> GetContractNameByAddressAsync(IChainContext chainContext, Address address)
-    {
-        Hash contractName;
-        IExecutive executive = null;
-        try
-        {
-            executive = await _smartContractExecutiveService.GetExecutiveAsync(chainContext, address);
-            contractName = executive.ContractName;
-        }
-        finally
-        {
-            if (executive != null)
-                await _smartContractExecutiveService.PutExecutiveAsync(chainContext, address, executive);
-        }
-
-        return contractName;
-    }
 }

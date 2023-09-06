@@ -63,12 +63,16 @@ public interface ISmartContractBridgeContext
     void SendInline(Address toAddress, string methodName, ByteString args);
 
     void SendVirtualInline(Hash fromVirtualAddress, Address toAddress, string methodName, ByteString args);
+    
+    void SendVirtualInlineWithContractName(Hash fromVirtualAddress, Address toAddress, string methodName, ByteString args);
 
     void SendVirtualInlineBySystemContract(Hash fromVirtualAddress, Address toAddress, string methodName,
         ByteString args);
 
 
     Address ConvertVirtualAddressToContractAddress(Hash virtualAddress, Address contractAddress);
+    
+    Address ConvertVirtualAddressToContractAddressWithContractName(Hash virtualAddress, Address contractAddress);
 
     Address ConvertVirtualAddressToContractAddressWithContractHashName(Hash virtualAddress,
         Address contractAddress);
@@ -91,7 +95,7 @@ public interface ISmartContractBridgeContext
 
     bool ECVrfVerify(byte[] pubKey, byte[] alpha, byte[] pi, out byte[] beta);
 
-    Hash GetContractNameByAddress(Address address);
+    Hash GetContractNameByAddress(string address);
 }
 
 [Serializable]

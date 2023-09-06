@@ -163,6 +163,27 @@ service TokenContractImpl {
     rpc GetTransactionFeeDelegateInfo(GetTransactionFeeDelegateInfoInput) returns (token.TransactionFeeDelegations){
         option (aelf.is_view) = true;
     }
+    
+    rpc TestGetNameByAddress(aelf.Address) returns (aelf.Hash) {
+        option (aelf.is_view) = true;
+    }
+    
+    rpc TestGetAddressByName(TestGetAddressByNameInput) returns (aelf.Address) {
+        option (aelf.is_view) = true;
+    }
+    
+    rpc TestGetVirtualAddress(google.protobuf.Empty) returns (TestGetVirtualAddressOutput) {
+        option (aelf.is_view) = true;
+    }
+}
+
+message TestGetAddressByNameInput {
+    string name = 1;
+}
+
+message TestGetVirtualAddressOutput{
+    aelf.Address old_address = 1;
+    aelf.Address new_address = 2;
 }
 
 message AdvanceResourceTokenInput {

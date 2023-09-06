@@ -281,7 +281,7 @@ public partial class BasicContractZero : BasicContractZeroImplContainer.BasicCon
         TryClearContractProposingData(inputHash, out var contractProposingInput);
 
         var address =
-            DeploySmartContract(null, input.Category, input.Code.ToByteArray(), false,
+            DeploySmartContract(input.ContractName, input.Category, input.Code.ToByteArray(), false,
                 DecideNonSystemContractAuthor(contractProposingInput?.Proposer, Context.Sender), false);
         return address;
     }
@@ -296,7 +296,7 @@ public partial class BasicContractZero : BasicContractZeroImplContainer.BasicCon
         if (!TryClearContractProposingData(inputHash, out _))
             Assert(Context.Sender == info.Author, "No permission.");
 
-        UpdateSmartContract(contractAddress, input.Code.ToByteArray(), info.Author, false);
+        UpdateSmartContract(contractAddress, input.Code.ToByteArray(), info.Author, false, input.ContractName);
         
         return contractAddress;
     }
@@ -449,8 +449,10 @@ public partial class BasicContractZero : BasicContractZeroImplContainer.BasicCon
 
         var inputHash = CalculateHashFromInput(input);
         TryClearContractProposingData(inputHash, out var contractProposingInput);
-        
-        var address = DeploySmartContract(string.IsNullOrWhiteSpace(input.ContractName) ? null : HashHelper.ComputeFrom(input.ContractName), input.Category, input.Code.ToByteArray(), false,
+
+        var address = DeploySmartContract(
+            input.ContractName == null || input.ContractName.Value.IsNullOrEmpty() ? null : input.ContractName,
+            input.Category, input.Code.ToByteArray(), false,
             contractProposingInput.Author, true);
         return address;
     }
@@ -462,8 +464,9 @@ public partial class BasicContractZero : BasicContractZeroImplContainer.BasicCon
         var inputHash = CalculateHashFromInput(input);
         TryClearContractProposingData(inputHash, out var proposingInput);
 
-        UpdateSmartContract(input.Address, input.Code.ToByteArray(), proposingInput.Author, true, string.IsNullOrWhiteSpace(input.ContractName) ? null : HashHelper.ComputeFrom(input.ContractName));
-        
+        UpdateSmartContract(input.Address, input.Code.ToByteArray(), proposingInput.Author, true,
+            input.ContractName == null || input.ContractName.Value.IsNullOrEmpty() ? null : input.ContractName);
+
         return new Empty();
     }
 

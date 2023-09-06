@@ -214,6 +214,4 @@ public class Executive : IExecutive
 
         return changes;
     }
-    
-    public string ContractName { get; set; }
 }

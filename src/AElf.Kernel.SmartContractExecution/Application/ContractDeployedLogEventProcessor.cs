@@ -65,8 +65,12 @@ public class ContractDeployedLogEventProcessor : LogEventProcessorBase, IBlockAc
             _smartContractExecutiveService.CleanExecutive(eventData.Address);
 
         if (eventData.Name != null)
+        {
             await _smartContractAddressService.SetSmartContractAddressAsync(chainContext, eventData.Name.ToStorageKey(),
                 eventData.Address);
+            await _smartContractAddressService.SetSmartContractNameAsync(chainContext, eventData.Address.ToStorageKey(),
+                eventData.Name);
+        }
 
         Logger.LogDebug($"Deployed contract {eventData}");
     }

@@ -18,6 +18,4 @@ public interface ITransactionReadOnlyExecutionService
     Task<string> GetTransactionParametersAsync(IChainContext chainContext, Transaction transaction);
 
     Task<bool> IsViewTransactionAsync(IChainContext chainContext, Transaction transaction);
-
-    Task<Hash> GetContractNameByAddressAsync(IChainContext chainContext, Address address);
 }

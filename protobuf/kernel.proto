@@ -181,3 +181,9 @@ message SmartContractAddress{
     Hash block_hash = 2;
     int64 block_height = 3;
 }
+
+message SmartContractName {
+    Hash name = 1;
+    Hash block_hash = 2;
+    int64 block_height = 3;
+}

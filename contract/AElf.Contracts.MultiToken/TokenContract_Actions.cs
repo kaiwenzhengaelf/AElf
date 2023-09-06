@@ -439,6 +439,27 @@ public partial class TokenContract : TokenContractImplContainer.TokenContractImp
         return new Empty();
     }
 
+    public override Address TestGetAddressByName(TestGetAddressByNameInput input)
+    {
+        return Context.GetContractAddressByName(input.Name);
+    }
+
+    public override Hash TestGetNameByAddress(Address input)
+    {
+        return Context.GetContractNameByAddress(input.ToBase58());
+    }
+
+    public override TestGetVirtualAddressOutput TestGetVirtualAddress(Empty input)
+    {
+        return new TestGetVirtualAddressOutput
+        {
+            OldAddress = Context.ConvertVirtualAddressToContractAddress(HashHelper.ComputeFrom("test"), Context.Self),
+            NewAddress =
+                Context.ConvertVirtualAddressToContractAddressWithContractName(HashHelper.ComputeFrom("test"),
+                    Context.Self)
+        };
+    }
+
     #region Cross chain
 
     public override Empty CrossChainCreateToken(CrossChainCreateTokenInput input)

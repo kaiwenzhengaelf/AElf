@@ -19,9 +19,9 @@ public class UnitTestSmartContractAddressService : SmartContractAddressService
         ITransactionReadOnlyExecutionService transactionReadOnlyExecutionService,
         ISmartContractAddressProvider smartContractAddressProvider,
         IEnumerable<ISmartContractAddressNameProvider> smartContractAddressNameProviders,
-        IBlockchainService blockchainService) : base(defaultContractZeroCodeProvider,
+        IBlockchainService blockchainService, ISmartContractNameProvider smartContractNameProvider) : base(defaultContractZeroCodeProvider,
         transactionReadOnlyExecutionService, smartContractAddressProvider, smartContractAddressNameProviders,
-        blockchainService)
+        blockchainService, smartContractNameProvider)
     {
     }
 

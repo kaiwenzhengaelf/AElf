@@ -17,8 +17,9 @@ public partial class BasicContractZero
     {
         if (name != null)
         {
+            Assert(!name.Value.IsNullOrEmpty(), "Invalid input name.");
             var address = State.NameAddressMapping[name];
-            Assert(address == null, "contract name has already been registered before");
+            Assert(address == null, "contract name has been registered before");
         }
 
         var codeHash = HashHelper.ComputeFrom(code);
@@ -49,8 +50,7 @@ public partial class BasicContractZero
             IsSystemContract = info.IsSystemContract,
             Version = info.Version,
             ContractAddress = contractAddress,
-            IsUserContract = isUserContract,
-            ContractName = name
+            IsUserContract = isUserContract
         };
 
         var contractInfo = Context.DeploySmartContract(contractAddress, reg, name);
@@ -110,6 +110,8 @@ public partial class BasicContractZero
             ContractAddress = contractAddress,
             IsUserContract = isUserContract
         };
+
+        var codeUpdated = new CodeUpdated();
         
         if (name != null)
         {
@@ -118,11 +120,11 @@ public partial class BasicContractZero
             Assert(info.ContractName == null || info.ContractName == name, "contract name can not be changed once set");
             
             info.ContractName = name;
-            reg.ContractName = name;
             State.NameAddressMapping[name] = contractAddress;
+            codeUpdated.Name = name;
         }
         
-        var contractInfo = Context.UpdateSmartContract(contractAddress, reg, null, info.ContractVersion);
+        var contractInfo = Context.UpdateSmartContract(contractAddress, reg, name, info.ContractVersion);
         Assert(contractInfo.IsSubsequentVersion,
             $"The version to be deployed is lower than the effective version({info.ContractVersion}), please correct the version number.");
 
@@ -132,14 +134,13 @@ public partial class BasicContractZero
         State.ContractInfos[contractAddress] = info;
         State.SmartContractRegistrations[reg.CodeHash] = reg;
 
-        Context.Fire(new CodeUpdated
-        {
-            Address = contractAddress,
-            OldCodeHash = oldCodeHash,
-            NewCodeHash = newCodeHash,
-            Version = info.Version,
-            ContractVersion = info.ContractVersion
-        });
+        codeUpdated.Address = contractAddress;
+        codeUpdated.OldCodeHash = oldCodeHash;
+        codeUpdated.NewCodeHash = newCodeHash;
+        codeUpdated.Version = info.Version;
+        codeUpdated.ContractVersion = info.ContractVersion;
+
+        Context.Fire(codeUpdated);
 
         Context.LogDebug(() => "BasicContractZero - update success: " + contractAddress.ToBase58());
     }

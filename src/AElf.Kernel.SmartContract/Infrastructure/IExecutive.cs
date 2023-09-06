@@ -22,5 +22,4 @@ public interface IExecutive
     bool IsView(string methodName);
     byte[] GetFileDescriptorSet();
     IEnumerable<FileDescriptor> GetFileDescriptors();
-    Hash ContractName { get; set; }
 }

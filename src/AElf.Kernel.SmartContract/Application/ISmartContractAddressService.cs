@@ -21,6 +21,9 @@ public interface ISmartContractAddressService
     Address GetZeroSmartContractAddress(int chainId);
 
     Task<IReadOnlyDictionary<Hash, Address>> GetSystemContractNameToAddressMappingAsync(IChainContext chainContext);
+
+    Task SetSmartContractNameAsync(IBlockIndex blockIndex, string address, Hash name);
+    Task<SmartContractNameDto> GetSmartContractNameAsync(IChainContext chainContext, string address);
 }
 
 public class SmartContractAddressService : ISmartContractAddressService, ISingletonDependency
@@ -29,19 +32,21 @@ public class SmartContractAddressService : ISmartContractAddressService, ISingle
     private readonly IDefaultContractZeroCodeProvider _defaultContractZeroCodeProvider;
     private readonly IEnumerable<ISmartContractAddressNameProvider> _smartContractAddressNameProviders;
     private readonly ISmartContractAddressProvider _smartContractAddressProvider;
+    private readonly ISmartContractNameProvider _smartContractNameProvider;
     private readonly ITransactionReadOnlyExecutionService _transactionReadOnlyExecutionService;
 
     public SmartContractAddressService(IDefaultContractZeroCodeProvider defaultContractZeroCodeProvider,
         ITransactionReadOnlyExecutionService transactionReadOnlyExecutionService,
         ISmartContractAddressProvider smartContractAddressProvider,
         IEnumerable<ISmartContractAddressNameProvider> smartContractAddressNameProviders,
-        IBlockchainService blockchainService)
+        IBlockchainService blockchainService, ISmartContractNameProvider smartContractNameProvider)
     {
         _defaultContractZeroCodeProvider = defaultContractZeroCodeProvider;
         _transactionReadOnlyExecutionService = transactionReadOnlyExecutionService;
         _smartContractAddressProvider = smartContractAddressProvider;
         _smartContractAddressNameProviders = smartContractAddressNameProviders;
         _blockchainService = blockchainService;
+        _smartContractNameProvider = smartContractNameProvider;
     }
 
     public async Task<Address> GetAddressByContractNameAsync(IChainContext chainContext, string name)
@@ -82,7 +87,38 @@ public class SmartContractAddressService : ISmartContractAddressService, ISingle
     {
         await _smartContractAddressProvider.SetSmartContractAddressAsync(blockIndex, name, address);
     }
+    
+    public async Task<SmartContractNameDto> GetSmartContractNameAsync(IChainContext chainContext, string address)
+    {
+        var smartContractName =
+            await _smartContractNameProvider.GetSmartContractNameAsync(chainContext, address);
+        if (smartContractName != null)
+        {
+            var smartContractNameDto = new SmartContractNameDto
+            {
+                SmartContractName = smartContractName,
+                Irreversible = await CheckSmartContractNameIrreversibleAsync(smartContractName)
+            };
 
+            return smartContractNameDto;
+        }
+
+        var name = await GetSmartContractNameFromStateAsync(chainContext, address);
+        if (name == null) return null;
+        return new SmartContractNameDto
+        {
+            SmartContractName = new SmartContractName
+            {
+                Name = name
+            }
+        };
+    }
+
+    public virtual async Task SetSmartContractNameAsync(IBlockIndex blockIndex, string address, Hash name)
+    {
+        await _smartContractNameProvider.SetSmartContractNameAsync(blockIndex, address, name);
+    }
+    
     public Address GetZeroSmartContractAddress()
     {
         return _defaultContractZeroCodeProvider.ContractZeroAddress;
@@ -117,6 +153,16 @@ public class SmartContractAddressService : ISmartContractAddressService, ISingle
             smartContractAddress.BlockHeight, chain.LastIrreversibleBlockHash);
         return blockHash == smartContractAddress.BlockHash;
     }
+    
+    private async Task<bool> CheckSmartContractNameIrreversibleAsync(SmartContractName smartContractName)
+    {
+        var chain = await _blockchainService.GetChainAsync();
+        if (smartContractName.BlockHeight > chain.LastIrreversibleBlockHeight) return false;
+
+        var blockHash = await _blockchainService.GetBlockHashByHeightAsync(chain,
+            smartContractName.BlockHeight, chain.LastIrreversibleBlockHash);
+        return blockHash == smartContractName.BlockHash;
+    }
 
     private async Task<Address> GetSmartContractAddressFromStateAsync(IChainContext chainContext, string name)
     {
@@ -133,10 +179,32 @@ public class SmartContractAddressService : ISmartContractAddressService, ISingle
 
         return address == null || address.Value.IsEmpty ? null : address;
     }
+    
+    private async Task<Hash> GetSmartContractNameFromStateAsync(IChainContext chainContext, string address)
+    {
+        var zeroAddress = _defaultContractZeroCodeProvider.ContractZeroAddress;
+        var tx = new Transaction
+        {
+            From = zeroAddress,
+            To = zeroAddress,
+            MethodName = nameof(ACS0Container.ACS0Stub.GetContractInfo),
+            Params = Address.FromBase58(address).ToByteString()
+        };
+        var info = await _transactionReadOnlyExecutionService.ExecuteAsync<ContractInfo>(
+            chainContext, tx, TimestampHelper.GetUtcNow(), false);
+
+        return info == null || info.ContractName == null || info.ContractName.Value.IsNullOrEmpty() ? null : info.ContractName;
+    }
 }
 
 public class SmartContractAddressDto
 {
     public SmartContractAddress SmartContractAddress { get; set; }
+    public bool Irreversible { get; set; }
+}
+
+public class SmartContractNameDto
+{
+    public SmartContractName SmartContractName { get; set; }
     public bool Irreversible { get; set; }
 }

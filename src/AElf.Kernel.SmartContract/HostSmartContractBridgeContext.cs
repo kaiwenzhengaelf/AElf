@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AElf.Cryptography;
@@ -15,7 +12,6 @@ using AElf.Types;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Options;
-using Google.Protobuf.Collections;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Threading;
 
@@ -241,6 +237,18 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
             Params = args
         });
     }
+    
+    public void SendVirtualInlineWithContractName(Hash fromVirtualAddress, Address toAddress, string methodName,
+        ByteString args)
+    {
+        TransactionContext.Trace.InlineTransactions.Add(new Transaction
+        {
+            From = ConvertVirtualAddressToContractAddressWithContractName(fromVirtualAddress, Self),
+            To = toAddress,
+            MethodName = methodName,
+            Params = args
+        });
+    }
 
     public void SendVirtualInlineBySystemContract(Hash fromVirtualAddress, Address toAddress, string methodName,
         ByteString args)
@@ -256,10 +264,18 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
 
     public Address ConvertVirtualAddressToContractAddress(Hash virtualAddress, Address contractAddress)
     {
-        var contractName = GetContractNameByAddress(Self);
-        return contractName == null ? Address.FromPublicKey(contractAddress.Value.Concat(
-            virtualAddress.Value.ToByteArray().ComputeHash()).ToArray()) : Address.FromPublicKey(contractName.Value.Concat(
-            virtualAddress.Value.ToByteArray().ComputeHash()).ToArray());
+        return Address.FromPublicKey(contractAddress.Value.Concat(virtualAddress.Value.ToByteArray().ComputeHash())
+            .ToArray());
+    }
+
+    public Address ConvertVirtualAddressToContractAddressWithContractName(Hash virtualAddress, Address contractAddress)
+    {
+        var contractName = GetContractNameByAddress(Self.ToBase58());
+        return contractName == null
+            ? Address.FromPublicKey(contractAddress.Value.Concat(
+                virtualAddress.Value.ToByteArray().ComputeHash()).ToArray())
+            : Address.FromPublicKey(contractName.Value.Concat(
+                virtualAddress.Value.ToByteArray().ComputeHash()).ToArray());
     }
 
     public Address ConvertVirtualAddressToContractAddressWithContractHashName(Hash virtualAddress,
@@ -330,7 +346,8 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
             _smartContractBridgeService.DeployContractAsync(registration));
     }
 
-    public ContractInfoDto UpdateSmartContract(Address address, SmartContractRegistration registration, Hash name, string previousContractVersion)
+    public ContractInfoDto UpdateSmartContract(Address address, SmartContractRegistration registration, Hash name,
+        string previousContractVersion)
     {
         if (!Self.Equals(_smartContractBridgeService.GetZeroSmartContractAddress())) throw new NoPermissionException();
 
@@ -338,7 +355,8 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
             _smartContractBridgeService.UpdateContractAsync(previousContractVersion, registration));
     }
 
-    public ContractVersionCheckDto CheckContractVersion(string previousContractVersion, SmartContractRegistration registration)
+    public ContractVersionCheckDto CheckContractVersion(string previousContractVersion,
+        SmartContractRegistration registration)
     {
         if (!Self.Equals(_smartContractBridgeService.GetZeroSmartContractAddress())) throw new NoPermissionException();
 
@@ -367,20 +385,19 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
         return true;
     }
 
-    public Hash GetContractNameByAddress(Address address)
+    public Hash GetContractNameByAddress(string address)
     {
-        var contractName = AsyncHelper.RunSync(async () =>
+        var name = AsyncHelper.RunSync(async () =>
         {
             var chainContext = new ChainContext
             {
                 BlockHash = TransactionContext.PreviousBlockHash,
-                BlockHeight = TransactionContext.BlockHeight - 1,
-                StateCache = CachedStateProvider.Cache
+                BlockHeight = TransactionContext.BlockHeight - 1
             };
-            
-            return await _transactionReadOnlyExecutionService.GetContractNameByAddressAsync(chainContext, address);
+
+            return await _smartContractBridgeService.GetContractNameByAddressAsync(chainContext, address);
         });
 
-        return contractName;
+        return name;
     }
 }
