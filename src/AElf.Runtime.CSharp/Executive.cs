@@ -215,5 +215,5 @@ public class Executive : IExecutive
         return changes;
     }
     
-    public string ContractName { get; set; }
+    public Hash ContractName { get; set; }
 }

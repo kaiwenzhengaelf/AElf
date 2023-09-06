@@ -38,8 +38,6 @@ public interface ISmartContractBridgeService
     Task<ByteString> GetStateAsync(Address contractAddress, string key, long blockHeight, Hash blockHash);
 
     Task<int> GetStateSizeLimitAsync(IChainContext chainContext);
-    
-    Task<Hash> GetContractNameByAddressAsync(Address address);
 }
 
 public class SmartContractBridgeService : ISmartContractBridgeService
@@ -143,10 +141,5 @@ public class SmartContractBridgeService : ISmartContractBridgeService
     {
         var stateSizeLimit = await _stateSizeLimitProvider.GetStateSizeLimitAsync(chainContext);
         return stateSizeLimit;
-    }
-
-    public Task<Hash> GetContractNameByAddressAsync(Address address)
-    {
-        throw new NotImplementedException();
     }
 }
