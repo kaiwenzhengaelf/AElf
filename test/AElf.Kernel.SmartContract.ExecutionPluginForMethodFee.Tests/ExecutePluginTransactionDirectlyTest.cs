@@ -2591,4 +2591,10 @@ public partial class ExecutePluginTransactionDirectlyTest : ExecutePluginTransac
         });
         return balance.Balance;
     }
+
+    [Fact]
+    public async Task Test()
+    {
+        await TokenContractImplStub.Test.CallAsync(new Empty());
+    }
 }

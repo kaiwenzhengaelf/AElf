@@ -378,8 +378,5 @@ public class CSharpSmartContractContext : ISmartContractBridgeContext
         return SmartContractBridgeContextImplementation.ECVrfVerify(pubKey, alpha, pi, out beta);
     }
 
-    public Hash GetContractNameByAddress(Address address)
-    {
-        return SmartContractBridgeContextImplementation.GetContractNameByAddress(address);
-    }
+    public Hash ContractName => SmartContractBridgeContextImplementation.ContractName;
 }

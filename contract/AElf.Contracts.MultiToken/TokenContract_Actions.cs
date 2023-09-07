@@ -439,6 +439,12 @@ public partial class TokenContract : TokenContractImplContainer.TokenContractImp
         return new Empty();
     }
 
+    public override Empty Test(Empty input)
+    {
+        var name = Context.ContractName;
+        return new Empty();
+    }
+
     #region Cross chain
 
     public override Empty CrossChainCreateToken(CrossChainCreateTokenInput input)

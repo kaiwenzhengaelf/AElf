@@ -172,6 +172,7 @@ public class PlainTransactionExecutingService : IPlainTransactionExecutingServic
 
             #endregion
 
+            txContext.ContractName = executive.ContractName;
             await executive.ApplyAsync(txContext);
 
             if (txContext.Trace.IsSuccessful())

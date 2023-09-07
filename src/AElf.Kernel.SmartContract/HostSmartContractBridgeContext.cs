@@ -179,6 +179,7 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
     public long CurrentHeight => TransactionContext.BlockHeight;
     public Timestamp CurrentBlockTime => TransactionContext.CurrentBlockTime;
     public Hash PreviousBlockHash => TransactionContext.PreviousBlockHash.Clone();
+    public Hash ContractName => TransactionContext.ContractName?.Clone();
 
     /// <summary>
     ///     Recovers the first public key signing this transaction.
@@ -256,7 +257,7 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
 
     public Address ConvertVirtualAddressToContractAddress(Hash virtualAddress, Address contractAddress)
     {
-        var contractName = GetContractNameByAddress(Self);
+        var contractName = ContractName;
         return contractName == null ? Address.FromPublicKey(contractAddress.Value.Concat(
             virtualAddress.Value.ToByteArray().ComputeHash()).ToArray()) : Address.FromPublicKey(contractName.Value.Concat(
             virtualAddress.Value.ToByteArray().ComputeHash()).ToArray());
@@ -365,22 +366,5 @@ public class HostSmartContractBridgeContext : IHostSmartContractBridgeContext, I
         }
 
         return true;
-    }
-
-    public Hash GetContractNameByAddress(Address address)
-    {
-        var contractName = AsyncHelper.RunSync(async () =>
-        {
-            var chainContext = new ChainContext
-            {
-                BlockHash = TransactionContext.PreviousBlockHash,
-                BlockHeight = TransactionContext.BlockHeight - 1,
-                StateCache = CachedStateProvider.Cache
-            };
-            
-            return await _transactionReadOnlyExecutionService.GetContractNameByAddressAsync(chainContext, address);
-        });
-
-        return contractName;
     }
 }

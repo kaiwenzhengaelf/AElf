@@ -47,6 +47,7 @@ public class PlainTransactionExecutingAsPluginService : PlainTransactionExecutin
             executive = await _smartContractExecutiveService.GetExecutiveAsync(
                 internalChainContext,
                 singleTxExecutingDto.Transaction.To);
+            txContext.ContractName = executive.ContractName;
         }
         catch (SmartContractFindRegistrationException)
         {

@@ -163,6 +163,10 @@ service TokenContractImpl {
     rpc GetTransactionFeeDelegateInfo(GetTransactionFeeDelegateInfoInput) returns (token.TransactionFeeDelegations){
         option (aelf.is_view) = true;
     }
+
+    rpc Test(google.protobuf.Empty) returns (google.protobuf.Empty){
+        option (aelf.is_view) = true;
+    }
 }
 
 message AdvanceResourceTokenInput {
